@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo List App</title>
+  <script src="./script.js"></script>
+  <style>
+    /* 기본 스타일 초기화 */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 700px;
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 25px;
+      font-size: 28px;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
+      width: 100%;
+      /* Ensure h1 takes full width for center alignment */
+    }
+
+    #open-category-settings {
+      position: absolute;
+      right: 0;
+      top: 5px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #555;
+      transition: color 0.2s, transform 0.2s;
+    }
+
+    #open-category-settings:hover {
+      color: #007bff;
+      transform: rotate(15deg);
+    }
+
+    /* --- 모달 관련 스타일 --- */
+    #category-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      display: none;
+      /* JS로 토글 */
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .category-management {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+      position: relative;
+      transform: scale(0.9);
+      opacity: 0;
+      transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+    }
+
+    #category-modal-overlay.active .category-management {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    .category-management h2 {
+      font-size: 22px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+      text-align: center;
+    }
+
+    #close-category-modal {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #aaa;
+    }
+
+    /* --- 카테고리 관리 폼 스타일 --- */
+    .category-input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      align-items: center;
+    }
+
+    #new-category-name {
+      flex-grow: 1;
+    }
+
+    #add-category-button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    #add-category-button:hover {
+      background-color: #0056b3;
+    }
+
+    #category-list-display {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 10px;
+      background-color: #f7f7f7;
+      border-radius: 6px;
+    }
+
+    .category-chip {
+      display: flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 13px;
+      color: white;
+      font-weight: 600;
+    }
+
+    .category-chip button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 14px;
+      margin-left: 6px;
+      cursor: pointer;
+      line-height: 1;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+
+    .category-chip button:hover {
+      opacity: 1;
+    }
+
+    /* --- 기존 입력 폼, 리스트, 정렬 스타일 유지 --- */
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .input-field {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    #todo-title-input {
+      flex-grow: 1;
+      min-width: 150px;
+    }
+
+    #category-select,
+    #due-date-input {
+      width: 150px;
+    }
+
+    #add-button {
+      background-color: #5cb85c;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.2s;
+    }
+
+    #add-button:hover {
+      background-color: #4cae4c;
+    }
+
+    .todolist {
+      list-style: none;
+      padding: 0;
+    }
+
+    .todo-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px;
+      margin-bottom: 10px;
+      background-color: #f9f9f9;
+      border-left: 5px solid transparent;
+      border-radius: 6px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .done .todo-title {
+      text-decoration: line-through;
+      color: #aaa;
+    }
+
+    .todo-item:hover {
+      background-color: #f0f0f0;
+    }
+
+    .item-details {
+      display: flex;
+      align-items: center;
+      flex-grow: 1;
+    }
+
+    .todo-title {
+      font-weight: bold;
+      font-size: 18px;
+      margin-right: 20px;
+      flex-grow: 1;
+    }
+
+    .category-tag {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 4px;
+      color: white;
+      margin-right: 15px;
+      white-space: nowrap;
+    }
+
+    .due-date {
+      font-size: 14px;
+      color: #777;
+      margin-right: 20px;
+      white-space: nowrap;
+    }
+
+    .delete-button {
+      background: #d9534f;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      font-size: 14px;
+    }
+
+    .delete-button:hover {
+      background: #c9302c;
+    }
+
+    .sort-section {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 15px;
+      gap: 10px;
+    }
+
+    .sort-section label {
+      font-weight: bold;
+      color: #555;
+      align-self: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- 제목 및 설정 버튼 -->
+    <div class="header-content">
+      <h1>바닐라 JS Todo List</h1>
+      <button id="open-category-settings" title="카테고리 설정" onclick="openCategoryModal()">⚙️</button>
+    </div>
+
+    <!-- 할 일 입력 폼 -->
+    <div class="input-group">
+      <input type="text" id="todo-title-input" class="input-field" placeholder="할 일 제목" onkeyup="handleKeyup(event)">
+
+      <select id="category-select" class="input-field">
+        <!-- 옵션은 JS에서 동적으로 채워짐 -->
+      </select>
+
+      <input type="date" id="due-date-input" class="input-field">
+
+      <button id="add-button" onclick="add()">✚</button>
+    </div>
+
+    <!-- 정렬 옵션 -->
+    <div class="sort-section">
+      <label for="sort-by">정렬 기준:</label>
+      <select id="sort-by" class="input-field" onchange="sortAndShowList()">
+        <option value="dueDateAsc">마감일 빠른 순</option>
+        <option value="dueDateDesc">마감일 늦은 순</option>
+        <option value="category">카테고리 순</option>
+        <option value="idDesc">최신 순</option>
+      </select>
+    </div>
+
+    <!-- 할 일 목록 -->
+    <ul id="todolist-ul" class="todolist">
+      <!-- Todo 아이템들이 여기에 렌더링 -->
+    </ul>
+  </div>
+
+  <!-- 카테고리 관리 모달 -->
+  <div id="category-modal-overlay" onclick="closeCategoryModal(event)">
+    <div class="category-management" onclick="event.stopPropagation()">
+      <button id="close-category-modal" onclick="closeCategoryModal()">X</button>
+      <h2>⚙️ 카테고리 관리</h2>
+      <div class="category-input-group">
+        <input type="text" id="new-category-name" class="input-field" placeholder="새 카테고리 이름"
+          onkeyup="handleCategoryKeyup(event)">
+        <input type="color" id="new-category-color" value="#3b82f6" class="input-field"
+          style="width: 50px; padding: 0;">
+        <button id="add-category-button" onclick="addCategory()">✚</button>
+      </div>
+      <div id="category-list-display">
+        <!-- 등록된 카테고리 칩이 여기에 표시 -->
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
