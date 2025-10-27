@@ -1,0 +1,294 @@
+/* 기본 스타일 초기화 */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f9;
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 700px;
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 25px;
+  font-size: 28px;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 10px;
+  width: 100%;
+  /* Ensure h1 takes full width for center alignment */
+}
+
+#open-category-settings {
+  position: absolute;
+  right: 0;
+  top: 5px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #555;
+  transition: color 0.2s, transform 0.2s;
+}
+
+#open-category-settings:hover {
+  color: #007bff;
+  transform: rotate(15deg);
+}
+
+/* --- 모달 관련 스타일 --- */
+#category-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: none;
+  /* JS로 토글 */
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.category-management {
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  position: relative;
+  transform: scale(0.9);
+  opacity: 0;
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+#category-modal-overlay.active .category-management {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.category-management h2 {
+  font-size: 22px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  text-align: center;
+}
+
+#close-category-modal {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #aaa;
+}
+
+/* --- 카테고리 관리 폼 스타일 --- */
+.category-input-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+#new-category-name {
+  flex-grow: 1;
+}
+
+#add-category-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+#add-category-button:hover {
+  background-color: #0056b3;
+}
+
+#category-list-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px;
+  background-color: #f7f7f7;
+  border-radius: 6px;
+}
+
+.category-chip {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 13px;
+  color: white;
+  font-weight: 600;
+}
+
+.category-chip button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 14px;
+  margin-left: 6px;
+  cursor: pointer;
+  line-height: 1;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.category-chip button:hover {
+  opacity: 1;
+}
+
+/* --- 기존 입력 폼, 리스트, 정렬 스타일 유지 --- */
+.input-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.input-field {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+#todo-title-input {
+  flex-grow: 1;
+  min-width: 150px;
+}
+
+#category-select,
+#due-date-input {
+  width: 150px;
+}
+
+#add-button {
+  background-color: #5cb85c;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.2s;
+}
+
+#add-button:hover {
+  background-color: #4cae4c;
+}
+
+.todolist {
+  list-style: none;
+  padding: 0;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px;
+  margin-bottom: 10px;
+  background-color: #f9f9f9;
+  border-left: 5px solid transparent;
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.done .todo-title {
+  text-decoration: line-through;
+  color: #aaa;
+}
+
+.todo-item:hover {
+  background-color: #f0f0f0;
+}
+
+.item-details {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+}
+
+.todo-title {
+  font-weight: bold;
+  font-size: 18px;
+  margin-right: 20px;
+  flex-grow: 1;
+}
+
+.category-tag {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: white;
+  margin-right: 15px;
+  white-space: nowrap;
+}
+
+.due-date {
+  font-size: 14px;
+  color: #777;
+  margin-right: 20px;
+  white-space: nowrap;
+}
+
+.delete-button {
+  background: #d9534f;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 14px;
+}
+
+.delete-button:hover {
+  background: #c9302c;
+}
+
+.sort-section {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 15px;
+  gap: 10px;
+}
+
+.sort-section label {
+  font-weight: bold;
+  color: #555;
+  align-self: center;
+}
