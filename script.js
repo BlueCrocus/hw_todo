@@ -4,7 +4,7 @@ let categories = [
   { name: "업무", color: "#DFF2D8" },
   { name: "개인", color: "#F4BBD3" },
   { name: "학습", color: "#F686BD" }
-];
+]; 
 
 let todoList = [
   { id: 1, title: "JavaScript 복습", done: false, category: "학습", color: categories.find(c => c.name === "학습")?.color || "#999", dueDate: "2025-11-10" },
@@ -73,7 +73,7 @@ function getTodoItemElem(item) {
   // 4. 삭제 버튼
   const deleteElem = document.createElement('button');
   deleteElem.type = 'button';
-  deleteElem.textContent = '삭제';
+  deleteElem.textContent = 'x';
   deleteElem.classList.add('delete-button');
   deleteElem.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -422,12 +422,12 @@ window.onload = function () {
   sortAndShowList();
 };
 
-// // 전역 스코프에 함수 노출
-// window.add = add;
-// window.handleKeyup = handleKeyup;
-// window.sortAndShowList = sortAndShowList;
-// window.removeItem = removeItem;
-// window.openCategoryModal = openCategoryModal; // 모달 기능 노출
-// window.closeCategoryModal = closeCategoryModal;
-// window.addCategory = addCategory;
-// window.handleCategoryKeyup = handleCategoryKeyup;
+// 전역 스코프에 함수 노출
+window.add = add;
+window.handleKeyup = handleKeyup;
+window.sortAndShowList = sortAndShowList;
+window.removeItem = removeItem;
+window.openCategoryModal = openCategoryModal; // 모달 기능 노출
+window.closeCategoryModal = closeCategoryModal;
+window.addCategory = addCategory;
+window.handleCategoryKeyup = handleCategoryKeyup;
