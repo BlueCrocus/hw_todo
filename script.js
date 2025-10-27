@@ -12,7 +12,6 @@ let todoList = [
   { id: 3, title: "프로젝트 기획서 작성", done: true, category: "업무", color: categories.find(c => c.name === "업무")?.color || "#999", dueDate: "2025-10-25" },
 ];
 
-
 let lastNo = todoList.length > 0 ? Math.max(...todoList.map(item => item.id)) : 0;
 
 // --- 2. DOM 요소 생성 및 헬퍼 함수 ---
@@ -36,6 +35,18 @@ function getTodoItemElem(item) {
   const detailsDiv = document.createElement('div');
   detailsDiv.classList.add('item-details');
 
+  // li 클릭 시 토글 기능 (제목, 버튼, 입력창이 아닐 때만 토글)
+  liElem.addEventListener('click', (e) => {
+    if (!e.target.classList.contains('todo-title') &&
+      !e.target.classList.contains('delete-button') &&
+      !e.target.classList.contains('edit-button') &&
+      !e.target.classList.contains('save-button') &&
+      !e.target.classList.contains('cancel-button') &&
+      !e.target.classList.contains('edit-todo-input')) {
+      toggleDone(item.id);
+    }
+  });
+
   // 1. 카테고리 태그
   const categoryTag = document.createElement('span');
   categoryTag.classList.add('category-tag');
@@ -43,11 +54,10 @@ function getTodoItemElem(item) {
   categoryTag.style.backgroundColor = item.color;
   detailsDiv.appendChild(categoryTag);
 
-  // 2. 제목 (클릭 시 완료/미완료 토글)
+  // 2. 제목
   const titleElem = document.createElement('span');
   titleElem.classList.add('todo-title');
   titleElem.textContent = item.title;
-  titleElem.addEventListener('click', () => toggleDone(item.id));
   detailsDiv.appendChild(titleElem);
 
   // 3. 마감일
@@ -70,18 +80,36 @@ function getTodoItemElem(item) {
 
   detailsDiv.appendChild(dueDateElem);
 
-  // 4. 삭제 버튼
+  // --- 버튼 컨테이너 추가 ---
+  const controlsDiv = document.createElement('div');
+  controlsDiv.classList.add('item-controls');
+
+  // 4. 수정 버튼 (✏️)
+  const editElem = document.createElement('button');
+  editElem.type = 'button';
+  editElem.textContent = '✏️';
+  editElem.classList.add('control-button', 'edit-button');
+  editElem.title = '할 일 수정';
+  editElem.addEventListener('click', (e) => {
+    e.stopPropagation();
+    editItem(item.id);
+  });
+  controlsDiv.appendChild(editElem);
+
+  // 5. 삭제 버튼 (x)
   const deleteElem = document.createElement('button');
   deleteElem.type = 'button';
   deleteElem.textContent = 'x';
-  deleteElem.classList.add('delete-button');
+  deleteElem.classList.add('control-button', 'delete-button');
+  deleteElem.title = '삭제';
   deleteElem.addEventListener('click', (e) => {
     e.stopPropagation();
     removeItem(item.id);
   });
+  controlsDiv.appendChild(deleteElem);
 
   liElem.appendChild(detailsDiv);
-  liElem.appendChild(deleteElem);
+  liElem.appendChild(controlsDiv); // controlsDiv를 li에 추가
 
   return liElem;
 }
@@ -97,22 +125,21 @@ function openCategoryModal() {
     document.getElementById('category-modal-overlay').classList.add('active');
   }, 10);
   document.getElementById('new-category-name').focus();
-  console.log("Category Modal Opened."); // <-- 로그 추가
+  console.log("Category Modal Opened.");
 }
 
 /**
  * 모달 닫기
  */
 function closeCategoryModal(event) {
-  // 모달 오버레이를 클릭한 경우에만 닫히도록 이벤트 버블링을 방지
   if (event && event.target.id !== 'category-modal-overlay') return;
 
   const overlay = document.getElementById('category-modal-overlay');
   overlay.classList.remove('active');
   setTimeout(() => {
     overlay.style.display = 'none';
-  }, 300); // CSS transition 시간과 맞춰 딜레이 적용
-  console.log("Category Modal Closed."); // <-- 로그 추가
+  }, 300);
+  console.log("Category Modal Closed.");
 }
 
 /**
@@ -139,6 +166,7 @@ function addCategory() {
   // UI 업데이트
   populateCategoryList();
   populateCategories();
+  saveToLocalStorage(); // 🚨 저장
 
   // 입력 필드 초기화
   nameInput.value = '';
@@ -146,8 +174,8 @@ function addCategory() {
   nameInput.focus();
 
   showNotification(`'${name}' 카테고리가 추가되었습니다.`, '#5cb85c');
-  console.log(`[Category Added] Name: ${name}, Color: ${color}`); // <-- 로그 추가
-  console.log("Current Categories:", categories); // <-- 로그 추가
+  console.log(`[Category Added] Name: ${name}, Color: ${color}`);
+  console.log("Current Categories:", categories);
 }
 
 /**
@@ -184,10 +212,11 @@ function removeCategory(name) {
   populateCategoryList();
   populateCategories();
   sortAndShowList();
+  saveToLocalStorage(); // 🚨 저장
 
   showNotification(`'${name}' 카테고리가 삭제되었습니다.`, '#d9534f');
-  console.log(`[Category Removed] Name: ${name}`); // <-- 로그 추가
-  console.log("Remaining Categories:", categories); // <-- 로그 추가
+  console.log(`[Category Removed] Name: ${name}`);
+  console.log("Remaining Categories:", categories);
 }
 
 /**
@@ -242,7 +271,85 @@ function populateCategories() {
   });
 }
 
-// --- 4. 데이터 조작 및 렌더링 로직 (기존 로직 유지) ---
+// --- 4. 데이터 조작 및 렌더링 로직 (수정 및 추가된 로직) ---
+
+/**
+ * Todo 아이템의 제목을 업데이트하고 화면을 갱신하는 함수 (수정 로직)
+ */
+function updateItemTitle(id, newTitle) {
+  const item = todoList.find(item => item.id === id);
+  if (item) {
+    item.title = newTitle.trim();
+    sortAndShowList();
+    saveToLocalStorage(); // 🚨 수정 후 저장
+    showNotification(`수정되었습니다.`, '#28a745');
+    console.log(`[Todo Updated] ID: ${id}, New Title: ${item.title}`);
+  }
+}
+
+/**
+ * 특정 Todo 항목을 편집 가능한 모드로 전환하는 함수 (✏️ 버튼 클릭 시)
+ */
+function editItem(id) {
+  const item = todoList.find(i => i.id === id);
+  if (!item) return;
+
+  const liElem = document.getElementById(`todo-${id}`);
+  const titleElem = liElem.querySelector('.todo-title');
+  const detailsDiv = liElem.querySelector('.item-details');
+  const controlsDiv = liElem.querySelector('.item-controls'); // 버튼 컨테이너
+
+  if (item.done) {
+    showNotification('완료된 항목은 수정할 수 없습니다.', '#f0ad4e');
+    return;
+  }
+
+  // 1. 기존 제목을 입력 필드로 대체
+  const editInput = document.createElement('input');
+  editInput.type = 'text';
+  editInput.value = item.title;
+  editInput.classList.add('edit-todo-input');
+  editInput.style.flexGrow = '1';
+
+  detailsDiv.replaceChild(editInput, titleElem);
+  editInput.focus();
+
+  // 2. 컨트롤 버튼 변경: 수정 버튼을 저장/취소 버튼으로 대체
+  controlsDiv.innerHTML = '';
+
+  // 2-1. 저장 버튼 (✔)
+  const saveButton = document.createElement('button');
+  saveButton.textContent = '✔';
+  saveButton.classList.add('control-button', 'save-button');
+  saveButton.title = '저장';
+  saveButton.onclick = () => {
+    const newTitle = editInput.value.trim();
+    if (newTitle === '') {
+      showNotification('제목은 비워둘 수 없습니다.', '#d9534f');
+      return;
+    }
+    updateItemTitle(id, newTitle);
+  };
+  controlsDiv.appendChild(saveButton);
+
+  // 2-2. 취소 버튼 (X)
+  const cancelButton = document.createElement('button');
+  cancelButton.textContent = 'X';
+  cancelButton.classList.add('control-button', 'cancel-button');
+  cancelButton.title = '취소';
+  cancelButton.onclick = () => sortAndShowList(); // 취소 시 원래 상태로 복원
+  controlsDiv.appendChild(cancelButton);
+
+  // 3. Enter/Escape 키 이벤트 처리
+  editInput.addEventListener('keyup', (e) => {
+    if (e.key === 'Enter') {
+      saveButton.click();
+    } else if (e.key === 'Escape') {
+      cancelButton.click();
+    }
+  });
+}
+
 
 /**
  * 현재 선택된 정렬 기준에 따라 todoList를 정렬하고 화면을 업데이트합니다.
@@ -325,6 +432,7 @@ function addItem() {
 
   todoList.push(newItem);
   sortAndShowList();
+  saveToLocalStorage(); // 🚨 저장
 
   // 입력 필드 초기화
   titleInput.value = '';
@@ -332,8 +440,8 @@ function addItem() {
   categorySelect.selectedIndex = 0;
   titleInput.focus();
 
-  console.log(`[Todo Added] ID: ${newItem.id}, Title: ${newItem.title}, Category: ${newItem.category}`); // <-- 로그 추가
-  console.log("Current Todo List:", todoList); // <-- 로그 추가
+  console.log(`[Todo Added] ID: ${newItem.id}, Title: ${newItem.title}, Category: ${newItem.category}`);
+  console.log("Current Todo List:", todoList);
 }
 
 /**
@@ -342,19 +450,21 @@ function addItem() {
 function removeItem(id) {
   todoList = todoList.filter(item => item.id !== id);
   sortAndShowList();
-  console.log(`[Todo Removed] ID: ${id}`); // <-- 로그 추가
-  console.log("Current Todo List:", todoList); // <-- 로그 추가
+  saveToLocalStorage(); // 🚨 저장
+  console.log(`[Todo Removed] ID: ${id}`);
+  console.log("Current Todo List:", todoList);
 }
 
 /**
- * Todo 아이템의 완료/미완료 상태를 토글하는 함수
+ * Todo 아이템의 완료/미완료 상태를 토글하는 함수 (저장 로직 추가)
  */
 function toggleDone(id) {
   const item = todoList.find(item => item.id === id);
   if (item) {
     item.done = !item.done;
     sortAndShowList();
-    console.log(`[Todo Toggled] ID: ${id}, Done: ${item.done}`); // <-- 로그 추가
+    saveToLocalStorage(); // 🚨 상태 변경 후 저장
+    console.log(`[Todo Toggled] ID: ${id}, Done: ${item.done}`);
   }
 }
 
@@ -381,18 +491,18 @@ function showNotification(message, color) {
   const notification = document.createElement('div');
   notification.textContent = message;
   notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 10px 20px;
-                background-color: ${color};
-                color: white;
-                border-radius: 5px;
-                z-index: 2000; /* 모달 위에 표시되도록 z-index를 높임 */
-                opacity: 0;
-                transition: opacity 0.5s, transform 0.5s;
-                transform: translateY(-20px);
-            `;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        background-color: ${color};
+        color: white;
+        border-radius: 5px;
+        z-index: 2000;
+        opacity: 0;
+        transition: opacity 0.5s, transform 0.5s;
+        transform: translateY(-20px);
+    `;
   document.body.appendChild(notification);
 
   // 표시
@@ -413,7 +523,7 @@ function showNotification(message, color) {
 window.onload = function () {
   console.log("Todo List Application Initialized.");
 
-  // 🚨 새로 추가: 저장된 데이터를 먼저 불러옵니다.
+  // 🚨 저장된 데이터를 먼저 불러옵니다.
   loadFromLocalStorage();
 
   // 초기 카테고리 목록에 "미지정" 기본값 추가
@@ -432,10 +542,11 @@ window.add = add;
 window.handleKeyup = handleKeyup;
 window.sortAndShowList = sortAndShowList;
 window.removeItem = removeItem;
-window.openCategoryModal = openCategoryModal; // 모달 기능 노출
+window.openCategoryModal = openCategoryModal;
 window.closeCategoryModal = closeCategoryModal;
 window.addCategory = addCategory;
 window.handleCategoryKeyup = handleCategoryKeyup;
+window.editItem = editItem; // 🚨 수정 기능 노출 (선택적)
 
 /**
  * 현재 todoList 및 categories 데이터를 localStorage에 저장합니다.
