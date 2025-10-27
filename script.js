@@ -422,12 +422,12 @@ window.onload = function () {
   sortAndShowList();
 };
 
-// 전역 스코프에 함수 노출
-window.add = add;
-window.handleKeyup = handleKeyup;
-window.sortAndShowList = sortAndShowList;
-window.removeItem = removeItem;
-window.openCategoryModal = openCategoryModal; // 모달 기능 노출
-window.closeCategoryModal = closeCategoryModal;
-window.addCategory = addCategory;
-window.handleCategoryKeyup = handleCategoryKeyup;
+// // 전역 스코프에 함수 노출
+// window.add = add;
+// window.handleKeyup = handleKeyup;
+// window.sortAndShowList = sortAndShowList;
+// window.removeItem = removeItem;
+// window.openCategoryModal = openCategoryModal; // 모달 기능 노출
+// window.closeCategoryModal = closeCategoryModal;
+// window.addCategory = addCategory;
+// window.handleCategoryKeyup = handleCategoryKeyup;
