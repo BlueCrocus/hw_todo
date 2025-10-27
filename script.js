@@ -4,7 +4,7 @@ let categories = [
   { name: "업무", color: "#DFF2D8" },
   { name: "개인", color: "#F4BBD3" },
   { name: "학습", color: "#F686BD" }
-]; 
+];
 
 let todoList = [
   { id: 1, title: "JavaScript 복습", done: false, category: "학습", color: categories.find(c => c.name === "학습")?.color || "#999", dueDate: "2025-11-10" },
@@ -411,10 +411,15 @@ function showNotification(message, color) {
 
 // 애플리케이션 초기화
 window.onload = function () {
-  console.log("Todo List Application Initialized."); // <-- 로그 추가
-  // 초기 카테고리 목록에 "미지정" 기본값 추가 (삭제 불가능)
+  console.log("Todo List Application Initialized.");
+
+  // 🚨 새로 추가: 저장된 데이터를 먼저 불러옵니다.
+  loadFromLocalStorage();
+
+  // 초기 카테고리 목록에 "미지정" 기본값 추가
   if (!categories.some(c => c.name === "미지정")) {
     categories.push({ name: "미지정", color: "#999" });
+    saveToLocalStorage(); // 미지정 추가 후 저장
   }
 
   populateCategoryList();
@@ -431,3 +436,32 @@ window.openCategoryModal = openCategoryModal; // 모달 기능 노출
 window.closeCategoryModal = closeCategoryModal;
 window.addCategory = addCategory;
 window.handleCategoryKeyup = handleCategoryKeyup;
+
+/**
+ * 현재 todoList 및 categories 데이터를 localStorage에 저장합니다.
+ */
+function saveToLocalStorage() {
+  localStorage.setItem('todoList', JSON.stringify(todoList));
+  localStorage.setItem('categories', JSON.stringify(categories));
+  console.log("Data saved to LocalStorage.");
+}
+
+/**
+ * localStorage에서 데이터를 불러와 전역 변수를 초기화합니다.
+ */
+function loadFromLocalStorage() {
+  const savedTodos = localStorage.getItem('todoList');
+  const savedCategories = localStorage.getItem('categories');
+
+  if (savedTodos) {
+    todoList = JSON.parse(savedTodos);
+    // lastNo 업데이트
+    lastNo = todoList.length > 0 ? Math.max(...todoList.map(item => item.id)) : 0;
+    console.log("Todo List loaded from LocalStorage.");
+  }
+
+  if (savedCategories) {
+    categories = JSON.parse(savedCategories);
+    console.log("Categories loaded from LocalStorage.");
+  }
+}
