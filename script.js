@@ -14,7 +14,45 @@ let todoList = [
 
 let lastNo = todoList.length > 0 ? Math.max(...todoList.map(item => item.id)) : 0;
 
+// ----------------------------------------------------------------------
+// --- 로컬 스토리지 저장 및 불러오기 함수 --- (완벽하게 통합됨)
+// ----------------------------------------------------------------------
+
+/**
+ * 현재 todoList 및 categories 데이터를 localStorage에 저장합니다.
+ */
+function saveToLocalStorage() {
+  localStorage.setItem('todoList', JSON.stringify(todoList));
+  localStorage.setItem('categories', JSON.stringify(categories));
+  console.log("Data saved to LocalStorage.");
+}
+
+/**
+ * localStorage에서 데이터를 불러와 전역 변수를 초기화합니다.
+ */
+function loadFromLocalStorage() {
+  const savedTodos = localStorage.getItem('todoList');
+  const savedCategories = localStorage.getItem('categories');
+
+  if (savedTodos) {
+    todoList = JSON.parse(savedTodos);
+    // lastNo 업데이트
+    lastNo = todoList.length > 0 ? Math.max(...todoList.map(item => item.id)) : 0;
+    console.log("Todo List loaded from LocalStorage.");
+  } else {
+    // 저장된 데이터가 없으면 초기 데이터로 저장
+    saveToLocalStorage();
+  }
+
+  if (savedCategories) {
+    categories = JSON.parse(savedCategories);
+    console.log("Categories loaded from LocalStorage.");
+  }
+}
+
+// ----------------------------------------------------------------------
 // --- 2. DOM 요소 생성 및 헬퍼 함수 ---
+// ----------------------------------------------------------------------
 
 /**
  * Todo 아이템 객체를 전달받아 화면에 표현하는 li 요소를 생성하는 함수
@@ -114,7 +152,9 @@ function getTodoItemElem(item) {
   return liElem;
 }
 
+// ----------------------------------------------------------------------
 // --- 3. 카테고리 관리 로직 ---
+// ----------------------------------------------------------------------
 
 /**
  * 모달 열기
@@ -271,7 +311,9 @@ function populateCategories() {
   });
 }
 
+// ----------------------------------------------------------------------
 // --- 4. 데이터 조작 및 렌더링 로직 (수정 및 추가된 로직) ---
+// ----------------------------------------------------------------------
 
 /**
  * Todo 아이템의 제목을 업데이트하고 화면을 갱신하는 함수 (수정 로직)
@@ -468,7 +510,9 @@ function toggleDone(id) {
   }
 }
 
+// ----------------------------------------------------------------------
 // --- 5. 이벤트 핸들러 및 초기화 ---
+// ----------------------------------------------------------------------
 
 /**
  * 추가 버튼 클릭 시 실행되는 이벤트 핸들러
@@ -537,7 +581,7 @@ window.onload = function () {
   sortAndShowList();
 };
 
-// 전역 스코프에 함수 노출
+// 전역 스코프에 함수 노출 (HTML에서 사용하기 위해)
 window.add = add;
 window.handleKeyup = handleKeyup;
 window.sortAndShowList = sortAndShowList;
@@ -546,33 +590,5 @@ window.openCategoryModal = openCategoryModal;
 window.closeCategoryModal = closeCategoryModal;
 window.addCategory = addCategory;
 window.handleCategoryKeyup = handleCategoryKeyup;
-window.editItem = editItem; // 🚨 수정 기능 노출 (선택적)
-
-/**
- * 현재 todoList 및 categories 데이터를 localStorage에 저장합니다.
- */
-function saveToLocalStorage() {
-  localStorage.setItem('todoList', JSON.stringify(todoList));
-  localStorage.setItem('categories', JSON.stringify(categories));
-  console.log("Data saved to LocalStorage.");
-}
-
-/**
- * localStorage에서 데이터를 불러와 전역 변수를 초기화합니다.
- */
-function loadFromLocalStorage() {
-  const savedTodos = localStorage.getItem('todoList');
-  const savedCategories = localStorage.getItem('categories');
-
-  if (savedTodos) {
-    todoList = JSON.parse(savedTodos);
-    // lastNo 업데이트
-    lastNo = todoList.length > 0 ? Math.max(...todoList.map(item => item.id)) : 0;
-    console.log("Todo List loaded from LocalStorage.");
-  }
-
-  if (savedCategories) {
-    categories = JSON.parse(savedCategories);
-    console.log("Categories loaded from LocalStorage.");
-  }
-}
+window.editItem = editItem;
+window.toggleDone = toggleDone; // 🚨 누락되었을 수 있는 토글 함수도 노출
