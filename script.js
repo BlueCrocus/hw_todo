@@ -74,6 +74,7 @@ function getTodoItemElem(item) {
   detailsDiv.classList.add('item-details');
 
   // li 클릭 시 토글 기능 (제목, 버튼, 입력창이 아닐 때만 토글)
+  // 💡 이벤트 리스너는 여기서 유지합니다. (동적 요소에 대한 이벤트 연결)
   liElem.addEventListener('click', (e) => {
     if (!e.target.classList.contains('todo-title') &&
       !e.target.classList.contains('delete-button') &&
@@ -128,6 +129,7 @@ function getTodoItemElem(item) {
   editElem.textContent = '✏️';
   editElem.classList.add('control-button', 'edit-button');
   editElem.title = '할 일 수정';
+  // 💡 이벤트 리스너는 여기서 유지합니다. (동적 요소에 대한 이벤트 연결)
   editElem.addEventListener('click', (e) => {
     e.stopPropagation();
     editItem(item.id);
@@ -140,6 +142,7 @@ function getTodoItemElem(item) {
   deleteElem.textContent = 'x';
   deleteElem.classList.add('control-button', 'delete-button');
   deleteElem.title = '삭제';
+  // 💡 이벤트 리스너는 여기서 유지합니다. (동적 요소에 대한 이벤트 연결)
   deleteElem.addEventListener('click', (e) => {
     e.stopPropagation();
     removeItem(item.id);
@@ -170,9 +173,10 @@ function openCategoryModal() {
 
 /**
  * 모달 닫기
+ * @param {Event} event - 이벤트 객체 (옵션)
  */
 function closeCategoryModal(event) {
-  if (event && event.target.id !== 'category-modal-overlay') return;
+  // 💡 HTML 인라인 onclick 제거로 인해 로직 수정: 오버레이 클릭 방지 로직은 이벤트 연결 시에 처리합니다.
 
   const overlay = document.getElementById('category-modal-overlay');
   overlay.classList.remove('active');
@@ -206,11 +210,11 @@ function addCategory() {
   // UI 업데이트
   populateCategoryList();
   populateCategories();
-  saveToLocalStorage(); // 🚨 저장
+  saveToLocalStorage();
 
   // 입력 필드 초기화
   nameInput.value = '';
-  colorInput.value = '#FE5D9F';
+  colorInput.value = '#3b82f6'; // 초기값으로 리셋
   nameInput.focus();
 
   showNotification(`'${name}' 카테고리가 추가되었습니다.`, '#5cb85c');
@@ -238,7 +242,7 @@ function removeCategory(name) {
   // 배열에서 카테고리 제거
   categories = categories.filter(c => c.name !== name);
 
-  // 삭제된 카테고리를 사용하던 Todo 항목 업데이트
+  // "미지정" 카테고리 확인 (없으면 추가하는 로직은 초기화에 있으므로 여기서는 find만 사용)
   const defaultCategory = categories.find(c => c.name === "미지정");
 
   todoList.forEach(item => {
@@ -252,7 +256,7 @@ function removeCategory(name) {
   populateCategoryList();
   populateCategories();
   sortAndShowList();
-  saveToLocalStorage(); // 🚨 저장
+  saveToLocalStorage();
 
   showNotification(`'${name}' 카테고리가 삭제되었습니다.`, '#d9534f');
   console.log(`[Category Removed] Name: ${name}`);
@@ -276,7 +280,8 @@ function populateCategoryList() {
     const deleteButton = document.createElement('button');
     deleteButton.textContent = 'x';
     deleteButton.title = `${category.name} 카테고리 삭제`;
-    deleteButton.onclick = () => removeCategory(category.name);
+    // 💡 이벤트 리스너는 여기서 유지합니다. (동적 요소에 대한 이벤트 연결)
+    deleteButton.addEventListener('click', () => removeCategory(category.name));
 
     // "미지정" 카테고리는 삭제 버튼 숨김
     if (category.name !== '미지정') {
@@ -323,7 +328,7 @@ function updateItemTitle(id, newTitle) {
   if (item) {
     item.title = newTitle.trim();
     sortAndShowList();
-    saveToLocalStorage(); // 🚨 수정 후 저장
+    saveToLocalStorage();
     showNotification(`수정되었습니다.`, '#28a745');
     console.log(`[Todo Updated] ID: ${id}, New Title: ${item.title}`);
   }
@@ -364,14 +369,15 @@ function editItem(id) {
   saveButton.textContent = '✔';
   saveButton.classList.add('control-button', 'save-button');
   saveButton.title = '저장';
-  saveButton.onclick = () => {
+  // 💡 이벤트 리스너는 여기서 유지합니다. (동적 요소에 대한 이벤트 연결)
+  saveButton.addEventListener('click', () => {
     const newTitle = editInput.value.trim();
     if (newTitle === '') {
       showNotification('제목은 비워둘 수 없습니다.', '#d9534f');
       return;
     }
     updateItemTitle(id, newTitle);
-  };
+  });
   controlsDiv.appendChild(saveButton);
 
   // 2-2. 취소 버튼 (X)
@@ -379,7 +385,8 @@ function editItem(id) {
   cancelButton.textContent = 'X';
   cancelButton.classList.add('control-button', 'cancel-button');
   cancelButton.title = '취소';
-  cancelButton.onclick = () => sortAndShowList(); // 취소 시 원래 상태로 복원
+  // 💡 이벤트 리스너는 여기서 유지합니다. (동적 요소에 대한 이벤트 연결)
+  cancelButton.addEventListener('click', () => sortAndShowList()); // 취소 시 원래 상태로 복원
   controlsDiv.appendChild(cancelButton);
 
   // 3. Enter/Escape 키 이벤트 처리
@@ -397,6 +404,15 @@ function editItem(id) {
  * 현재 선택된 정렬 기준에 따라 todoList를 정렬하고 화면을 업데이트합니다.
  */
 function sortAndShowList() {
+  const searchSection = document.getElementById('search-section');
+  const searchInput = document.getElementById('search-input');
+
+  // 🚨 검색창이 열려 있고, 검색어가 입력되어 있다면 filterTodoList를 호출합니다.
+  if (searchSection && searchSection.style.display !== 'none' && searchInput && searchInput.value.trim() !== '') {
+    filterTodoList();
+    return;
+  }
+
   const sortBy = document.getElementById('sort-by').value;
 
   // 1. 데이터 정렬
@@ -474,7 +490,7 @@ function addItem() {
 
   todoList.push(newItem);
   sortAndShowList();
-  saveToLocalStorage(); // 🚨 저장
+  saveToLocalStorage();
 
   // 입력 필드 초기화
   titleInput.value = '';
@@ -492,20 +508,20 @@ function addItem() {
 function removeItem(id) {
   todoList = todoList.filter(item => item.id !== id);
   sortAndShowList();
-  saveToLocalStorage(); // 🚨 저장
+  saveToLocalStorage();
   console.log(`[Todo Removed] ID: ${id}`);
   console.log("Current Todo List:", todoList);
 }
 
 /**
- * Todo 아이템의 완료/미완료 상태를 토글하는 함수 (저장 로직 추가)
+ * Todo 아이템의 완료/미완료 상태를 토글하는 함수
  */
 function toggleDone(id) {
   const item = todoList.find(item => item.id === id);
   if (item) {
     item.done = !item.done;
     sortAndShowList();
-    saveToLocalStorage(); // 🚨 상태 변경 후 저장
+    saveToLocalStorage();
     console.log(`[Todo Toggled] ID: ${id}, Done: ${item.done}`);
   }
 }
@@ -579,68 +595,6 @@ function filterTodoList() {
   });
 }
 
-
-/**
- * 기존 sortAndShowList 함수 수정:
- * 검색창이 열려있으면 필터링 함수를 호출하도록 로직을 변경합니다.
- */
-function sortAndShowList() {
-  const searchSection = document.getElementById('search-section');
-  const searchInput = document.getElementById('search-input');
-
-  // 🚨 검색창이 열려 있고, 검색어가 입력되어 있다면 filterTodoList를 호출합니다.
-  if (searchSection && searchSection.style.display !== 'none' && searchInput && searchInput.value.trim() !== '') {
-    filterTodoList();
-    return;
-  }
-
-  const sortBy = document.getElementById('sort-by').value;
-  // ... (이하 기존 정렬 로직은 그대로 유지) ...
-  // ... (기존 정렬 및 렌더링 로직) ...
-
-  // (이 부분에 기존 정렬/렌더링 로직이 들어갑니다.)
-
-  // 1. 데이터 정렬
-  const sortedList = [...todoList].sort((a, b) => {
-    // 완료된 항목은 항상 목록의 끝으로 보냅니다.
-    if (a.done !== b.done) {
-      return a.done ? 1 : -1;
-    }
-
-    if (sortBy === 'dueDateAsc') {
-      // 마감일 빠른 순 (오름차순)
-      const dateA = new Date(a.dueDate || '9999-12-31');
-      const dateB = new Date(b.dueDate || '9999-12-31');
-      return dateA - dateB;
-    } else if (sortBy === 'dueDateDesc') {
-      // 마감일 늦은 순 (내림차순)
-      const dateA = new Date(a.dueDate || '0000-01-01');
-      const dateB = new Date(b.dueDate || '0000-01-01');
-      return dateB - dateA;
-    } else if (sortBy === 'category') {
-      // 카테고리 이름 순
-      return a.category.localeCompare(b.category);
-    } else if (sortBy === 'idDesc') {
-      // 최신 순 (ID 내림차순)
-      return b.id - a.id;
-    }
-    return 0;
-  });
-
-  // 2. 화면 출력
-  const todoListUl = document.getElementById('todolist-ul');
-  todoListUl.innerHTML = '';
-
-  if (sortedList.length === 0) {
-    todoListUl.innerHTML = '<li style="text-align: center; color: #888; padding: 20px;">할 일이 없습니다!</li>';
-    return;
-  }
-
-  sortedList.forEach(item => {
-    todoListUl.appendChild(getTodoItemElem(item));
-  });
-}
-
 // ----------------------------------------------------------------------
 // --- 5. 이벤트 핸들러 및 초기화 ---
 // ----------------------------------------------------------------------
@@ -666,18 +620,18 @@ function showNotification(message, color) {
   const notification = document.createElement('div');
   notification.textContent = message;
   notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 10px 20px;
-        background-color: ${color};
-        color: white;
-        border-radius: 5px;
-        z-index: 2000;
-        opacity: 0;
-        transition: opacity 0.5s, transform 0.5s;
-        transform: translateY(-20px);
-    `;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        background-color: ${color};
+        color: white;
+        border-radius: 5px;
+        z-index: 2000;
+        opacity: 0;
+        transition: opacity 0.5s, transform 0.5s;
+        transform: translateY(-20px);
+    `;
   document.body.appendChild(notification);
 
   // 표시
@@ -692,6 +646,37 @@ function showNotification(message, color) {
     notification.style.transform = 'translateY(-20px)';
     notification.addEventListener('transitionend', () => notification.remove());
   }, 3000);
+}
+
+/**
+ * 모든 DOM 이벤트 리스너를 연결하는 함수
+ */
+function setupEventListeners() {
+  // 1. 할 일 추가 섹션
+  document.getElementById('add-button').addEventListener('click', add);
+  document.getElementById('todo-title-input').addEventListener('keyup', handleKeyup);
+
+  // 2. 정렬 및 검색 섹션
+  document.getElementById('sort-by').addEventListener('change', sortAndShowList);
+  document.getElementById('open-search-input').addEventListener('click', toggleSearchInput);
+  document.getElementById('search-input').addEventListener('keyup', filterTodoList);
+
+  // 3. 카테고리 모달 섹션
+  document.getElementById('open-category-settings').addEventListener('click', openCategoryModal);
+  document.getElementById('close-category-modal').addEventListener('click', closeCategoryModal);
+
+  // 모달 오버레이 클릭 시 닫기 (자식 요소 클릭 방지)
+  document.getElementById('category-modal-overlay').addEventListener('click', (e) => {
+    if (e.target.id === 'category-modal-overlay') {
+      closeCategoryModal();
+    }
+  });
+
+  // 카테고리 추가
+  document.getElementById('add-category-button').addEventListener('click', addCategory);
+  document.getElementById('new-category-name').addEventListener('keyup', handleCategoryKeyup);
+
+  console.log("All event listeners set up.");
 }
 
 // 애플리케이션 초기화
@@ -710,18 +695,7 @@ window.onload = function () {
   populateCategoryList();
   populateCategories();
   sortAndShowList();
-};
 
-// 전역 스코프에 함수 노출 (HTML에서 사용하기 위해)
-window.add = add;
-window.handleKeyup = handleKeyup;
-window.sortAndShowList = sortAndShowList;
-window.removeItem = removeItem;
-window.openCategoryModal = openCategoryModal;
-window.closeCategoryModal = closeCategoryModal;
-window.addCategory = addCategory;
-window.handleCategoryKeyup = handleCategoryKeyup;
-window.editItem = editItem;
-window.toggleDone = toggleDone; // 🚨 누락되었을 수 있는 토글 함수도 노출
-window.toggleSearchInput = toggleSearchInput; // 🚨 새 함수 노출
-window.filterTodoList = filterTodoList; // 🚨 새 함수 노출
+  // 💡 모든 이벤트 리스너를 동적으로 연결
+  setupEventListeners();
+};

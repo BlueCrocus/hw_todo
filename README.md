@@ -91,25 +91,6 @@
 
 ---
 
-## 🧭 전역 함수
-
-```js
-window.add = add;
-window.handleKeyup = handleKeyup;
-window.sortAndShowList = sortAndShowList;
-window.removeItem = removeItem;
-window.openCategoryModal = openCategoryModal;
-window.closeCategoryModal = closeCategoryModal;
-window.addCategory = addCategory;
-window.handleCategoryKeyup = handleCategoryKeyup;
-window.editItem = editItem;
-window.toggleDone = toggleDone;
-window.toggleSearchInput = toggleSearchInput;
-window.filterTodoList = filterTodoList;
-```
-
----
-
 ## 💡 확장 아이디어
 
 - 제목 + 카테고리 동시 검색  
