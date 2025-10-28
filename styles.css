@@ -54,13 +54,15 @@ h1 {
 }
 
 /* ====================================================================== */
-/* 입력 폼 및 정렬 섹션 (데스크톱 기본) */
+/* 입력 폼 및 정렬 섹션 (데스크톱/정렬 수정) */
 /* ====================================================================== */
 .input-group {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
   flex-wrap: wrap;
+  /* 🚨 정렬 수정: 모든 아이템을 수직 중앙에 정렬합니다. */
+  align-items: center;
 }
 
 .input-field {
@@ -69,7 +71,18 @@ h1 {
   border-radius: 6px;
   font-size: 16px;
   box-sizing: border-box;
-  /* 패딩이 너비에 포함되도록 */
+  /* 🚨 높이 통일: 다른 버튼과 높이를 동일하게 맞춥니다. */
+  height: 40px;
+
+  /* 날짜/카테고리 필드 디자인 통일을 위한 추가 */
+  background-color: white;
+  /* 회색 배경 문제 방지 */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  /* 브라우저 기본 UI 화살표 제거 */
+  text-align: left;
+  /* 텍스트 정렬 */
 }
 
 #todo-title-input {
@@ -81,13 +94,18 @@ h1 {
 #due-date-input {
   width: 150px;
   flex-shrink: 0;
+  /* 드롭다운/날짜 필드가 깔끔하게 보이도록 패딩 조정 */
+  padding-right: 15px;
 }
 
 #add-button {
   background-color: #5cb85c;
   color: white;
   border: none;
-  padding: 10px 15px;
+  /* 🚨 높이 통일 */
+  height: 40px;
+  padding: 0 15px;
+  /* 높이가 고정되었으므로 패딩 조정 */
   border-radius: 6px;
   cursor: pointer;
   font-size: 16px;
@@ -156,7 +174,7 @@ h1 {
   margin-bottom: 10px;
 }
 
-/* 제목: 줄바꿈 가능하도록 설정 (가장 중요한 수정) */
+/* 제목: 줄바꿈 가능하도록 설정 */
 .todo-title {
   font-weight: bold;
   font-size: 18px;
@@ -192,7 +210,6 @@ h1 {
   gap: 5px;
   flex-shrink: 0;
   width: 100%;
-  /* 버튼을 오른쪽으로 정렬하기 위해 */
   justify-content: flex-end;
 }
 
@@ -219,9 +236,10 @@ h1 {
   border-radius: 4px;
   flex-grow: 1;
   max-width: 100%;
-  /* 모바일에서 100% 사용 */
   box-sizing: border-box;
   font-family: inherit;
+  height: 35px;
+  /* 편집 모드일 때 높이 조정 */
 }
 
 /* ====================================================================== */
@@ -299,6 +317,8 @@ h1 {
   border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.2s;
+  height: 40px;
+  /* 높이 통일 */
 }
 
 #add-category-button:hover {
@@ -352,8 +372,11 @@ h1 {
   .input-group {
     flex-direction: column;
     gap: 8px;
+    align-items: stretch;
+    /* 전체 너비를 채우도록 */
   }
 
+  /* 모든 요소가 100% 너비를 채우도록 */
   #todo-title-input,
   #category-select,
   #due-date-input,
