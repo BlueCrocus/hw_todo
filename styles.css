@@ -1,4 +1,6 @@
+/* ====================================================================== */
 /* 기본 스타일 초기화 */
+/* ====================================================================== */
 body {
   font-family: Arial, sans-serif;
   background-color: #f4f4f9;
@@ -51,7 +53,180 @@ h1 {
   transform: rotate(15deg);
 }
 
-/* --- 모달 관련 스타일 --- */
+/* ====================================================================== */
+/* 입력 폼 및 정렬 섹션 (데스크톱 기본) */
+/* ====================================================================== */
+.input-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.input-field {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  box-sizing: border-box;
+  /* 패딩이 너비에 포함되도록 */
+}
+
+#todo-title-input {
+  flex-grow: 1;
+  min-width: 150px;
+}
+
+#category-select,
+#due-date-input {
+  width: 150px;
+  flex-shrink: 0;
+}
+
+#add-button {
+  background-color: #5cb85c;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.2s;
+}
+
+#add-button:hover {
+  background-color: #4cae4c;
+}
+
+.sort-section {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 15px;
+  gap: 10px;
+}
+
+.sort-section label {
+  font-weight: bold;
+  color: #555;
+  align-self: center;
+}
+
+/* ====================================================================== */
+/* Todo 항목 리스트 및 반응형 처리 (기본: 모바일 우선) */
+/* ====================================================================== */
+.todolist {
+  list-style: none;
+  padding: 0;
+}
+
+/* 모바일 우선: 세로로 쌓이도록 기본값 설정 */
+.todo-item {
+  display: flex;
+  flex-direction: column;
+  /* 작은 화면에서 세로로 쌓이도록 */
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 15px;
+  margin-bottom: 10px;
+  background-color: #f9f9f9;
+  border-left: 5px solid transparent;
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.done .todo-title {
+  text-decoration: line-through;
+  color: #aaa;
+}
+
+.todo-item:hover {
+  background-color: #f0f0f0;
+}
+
+/* 제목, 카테고리, 마감일 컨테이너 */
+.item-details {
+  display: flex;
+  flex-direction: column;
+  /* 세로로 쌓이도록 */
+  align-items: flex-start;
+  flex-grow: 1;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+/* 제목: 줄바꿈 가능하도록 설정 (가장 중요한 수정) */
+.todo-title {
+  font-weight: bold;
+  font-size: 18px;
+  margin-right: 0;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  width: 100%;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.category-tag {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: white;
+  margin-right: 0;
+  margin-bottom: 5px;
+  white-space: nowrap;
+}
+
+.due-date {
+  font-size: 14px;
+  color: #777;
+  margin-right: 0;
+  white-space: nowrap;
+}
+
+/* 버튼 컨테이너 */
+.item-controls {
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+  width: 100%;
+  /* 버튼을 오른쪽으로 정렬하기 위해 */
+  justify-content: flex-end;
+}
+
+.control-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 5px;
+  transition: color 0.2s;
+  color: black;
+}
+
+.control-button:hover {
+  color: #007bff;
+}
+
+/* 제목 편집 입력 필드 스타일 */
+.edit-todo-input {
+  font-size: 16px;
+  padding: 5px 8px;
+  margin-right: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  flex-grow: 1;
+  max-width: 100%;
+  /* 모바일에서 100% 사용 */
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+/* ====================================================================== */
+/* 카테고리 모달 스타일 */
+/* ====================================================================== */
 #category-modal-overlay {
   position: fixed;
   top: 0;
@@ -104,7 +279,7 @@ h1 {
   color: #aaa;
 }
 
-/* --- 카테고리 관리 폼 스타일 --- */
+/* 카테고리 관리 폼 스타일 (데스크톱 기본) */
 .category-input-group {
   display: flex;
   gap: 10px;
@@ -165,185 +340,114 @@ h1 {
   opacity: 1;
 }
 
-/* --- 기존 입력 폼, 리스트, 정렬 스타일 유지 --- */
-.input-group {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
+/* ====================================================================== */
+/* 미디어 쿼리: 600px 이하 모바일 화면 최적화 */
+/* ====================================================================== */
+@media (max-width: 600px) {
+  .container {
+    padding: 20px 15px;
+  }
+
+  /* 1. 할 일 추가 입력 폼 세로 정렬 */
+  .input-group {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  #todo-title-input,
+  #category-select,
+  #due-date-input,
+  #add-button {
+    width: 100%;
+    min-width: unset;
+  }
+
+  /* 2. 정렬 옵션 */
+  .sort-section {
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  #sort-by {
+    width: 50%;
+  }
+
+  /* 3. 카테고리 모달 입력 폼 세로 정렬 */
+  .category-management {
+    padding: 15px;
+    width: 95%;
+  }
+
+  .category-input-group {
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  #new-category-name {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .category-input-group>input[type="color"] {
+    width: 100%;
+    height: 40px;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  #add-category-button {
+    width: 100%;
+    order: 3;
+  }
 }
 
-.input-field {
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 16px;
-}
 
-#todo-title-input {
-  flex-grow: 1;
-  min-width: 150px;
-}
+/* ====================================================================== */
+/* 미디어 쿼리: 601px 이상 데스크톱/태블릿 */
+/* ====================================================================== */
+@media (min-width: 601px) {
 
-#category-select,
-#due-date-input {
-  width: 150px;
-}
+  /* Todo 항목 가로 배치 (원래대로) */
+  .todo-item {
+    flex-direction: row;
+    align-items: center;
+  }
 
-#add-button {
-  background-color: #5cb85c;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.2s;
-}
+  /* 상세 정보 가로 배치 (원래대로) */
+  .item-details {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 0;
+  }
 
-#add-button:hover {
-  background-color: #4cae4c;
-}
+  /* 제목 */
+  .todo-title {
+    margin-right: 20px;
+    width: auto;
+    flex-grow: 1;
+  }
 
-.todolist {
-  list-style: none;
-  padding: 0;
-}
+  /* 카테고리 및 마감일 */
+  .category-tag {
+    margin-right: 15px;
+    margin-bottom: 0;
+  }
 
-.todo-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 15px;
-  margin-bottom: 10px;
-  background-color: #f9f9f9;
-  border-left: 5px solid transparent;
-  border-radius: 6px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s;
-  cursor: pointer;
-}
+  .due-date {
+    margin-right: 20px;
+    flex-shrink: 0;
+  }
 
-.done .todo-title {
-  text-decoration: line-through;
-  color: #aaa;
-}
+  /* 버튼 */
+  .item-controls {
+    width: auto;
+    justify-content: flex-start;
+  }
 
-.todo-item:hover {
-  background-color: #f0f0f0;
-}
-
-.item-details {
-  display: flex;
-  align-items: center;
-  flex-grow: 1;
-}
-
-.todo-title {
-  font-weight: bold;
-  font-size: 18px;
-  margin-right: 20px;
-  flex-grow: 1;
-}
-
-.category-tag {
-  font-size: 12px;
-  font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 4px;
-  color: white;
-  margin-right: 15px;
-  white-space: nowrap;
-}
-
-.due-date {
-  font-size: 14px;
-  color: #777;
-  margin-right: 20px;
-  white-space: nowrap;
-}
-
-/* ⚠️ 기존 .delete-button 스타일 제거 */
-/*
-.delete-button {
-    background: #d9534f;
-    color: white; 
-    border: none;
-    padding: 8px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    font-size: 14px;
-}
-
-.delete-button:hover {
-    background: #c9302c;
-}
-*/
-
-.sort-section {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 15px;
-  gap: 10px;
-}
-
-.sort-section label {
-  font-weight: bold;
-  color: #555;
-  align-self: center;
-}
-
-/* --- 컨트롤 버튼 및 편집 모드 스타일 --- */
-
-.todo-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 15px;
-  border-bottom: 1px solid #eee;
-  cursor: pointer;
-}
-
-.item-details {
-  display: flex;
-  align-items: center;
-  flex-grow: 1;
-}
-
-/* 버튼 컨테이너 스타일 */
-.item-controls {
-  display: flex;
-  gap: 5px;
-  flex-shrink: 0;
-}
-
-/* 일반적인 버튼 스타일 */
-.control-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  padding: 5px;
-  transition: color 0.2s;
-  color: black;
-}
-
-.control-button:hover {
-  /* 마우스 오버 시 색상 변경 */
-  color: #007bff;
-}
-
-/* 제목 편집 입력 필드 스타일 */
-.edit-todo-input {
-  font-size: 16px;
-  padding: 5px 8px;
-  margin-right: 15px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  flex-grow: 1;
-  /* flex-grow: 1; 추가 */
-  max-width: 60%;
-  box-sizing: border-box;
-  font-family: inherit;
+  /* 편집 모드 입력 필드 */
+  .edit-todo-input {
+    max-width: 60%;
+  }
 }
