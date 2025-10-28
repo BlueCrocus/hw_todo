@@ -9,31 +9,35 @@
   <link rel="stylesheet" href="./styles.css">
   <link rel="shortcut icon" href="./favicon/wx.ico" type="image/x-icon" />
   <link rel="icon" href="./favicon/wx.svg" type="image/svg" />
-
 </head>
 
 <body>
   <div class="container">
-    <!-- 제목 및 설정 버튼 -->
     <div class="header-content">
       <h1>Todo List ✒️</h1>
-      <button id="open-category-settings" title="카테고리 설정" onclick="openCategoryModal()">⚙️</button>
+
+      <div class="header-controls">
+        <button id="open-search-input" title="검색" onclick="toggleSearchInput()">🔍</button>
+        <button id="open-category-settings" title="카테고리 설정" onclick="openCategoryModal()">⚙️</button>
+      </div>
     </div>
 
-    <!-- 할 일 입력 폼 -->
+    <div id="search-section">
+      <input type="text" id="search-input" class="input-field" placeholder="검색할 할 일 제목을 입력하세요..."
+        onkeyup="filterTodoList()">
+    </div>
+
     <div class="input-group">
       <input type="text" id="todo-title-input" class="input-field" placeholder="할 일 제목" onkeyup="handleKeyup(event)">
 
       <select id="category-select" class="input-field">
-        <!-- 옵션은 JS에서 동적으로 채워짐 -->
       </select>
 
-      <input type="date" id="due-date-input" class="input-field">
+      <input type="date" id="due-date-input" class="input-field" placeholder="마감일 선택">
 
       <button id="add-button" onclick="add()">✚</button>
     </div>
 
-    <!-- 정렬 옵션 -->
     <div class="sort-section">
       <label for="sort-by">정렬 기준:</label>
       <select id="sort-by" class="input-field" onchange="sortAndShowList()">
@@ -44,13 +48,10 @@
       </select>
     </div>
 
-    <!-- 할 일 목록 -->
     <ul id="todolist-ul" class="todolist">
-      <!-- Todo 아이템들이 여기에 렌더링 -->
     </ul>
   </div>
 
-  <!-- 카테고리 관리 모달 -->
   <div id="category-modal-overlay" onclick="closeCategoryModal(event)">
     <div class="category-management" onclick="event.stopPropagation()">
       <button id="close-category-modal" onclick="closeCategoryModal()">X</button>
@@ -63,7 +64,6 @@
         <button id="add-category-button" onclick="addCategory()">✚</button>
       </div>
       <div id="category-list-display">
-        <!-- 등록된 카테고리 칩이 여기에 표시 -->
       </div>
     </div>
   </div>

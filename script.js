@@ -15,7 +15,7 @@ let todoList = [
 let lastNo = todoList.length > 0 ? Math.max(...todoList.map(item => item.id)) : 0;
 
 // ----------------------------------------------------------------------
-// --- 로컬 스토리지 저장 및 불러오기 함수 --- (완벽하게 통합됨)
+// --- 로컬 스토리지 저장 및 불러오기 함수 --- 
 // ----------------------------------------------------------------------
 
 /**
@@ -312,7 +312,7 @@ function populateCategories() {
 }
 
 // ----------------------------------------------------------------------
-// --- 4. 데이터 조작 및 렌더링 로직 (수정 및 추가된 로직) ---
+// --- 4. 데이터 조작 및 렌더링 로직 ---
 // ----------------------------------------------------------------------
 
 /**
@@ -510,6 +510,137 @@ function toggleDone(id) {
   }
 }
 
+/**
+ * 검색 입력 필드의 표시 상태를 토글합니다.
+ */
+function toggleSearchInput() {
+  const searchSection = document.getElementById('search-section');
+  const searchInput = document.getElementById('search-input');
+
+  if (searchSection.style.display === 'none' || !searchSection.style.display) {
+    searchSection.style.display = 'block';
+    searchInput.focus();
+    // 검색창이 열릴 때 이전 필터링을 초기화합니다.
+    searchInput.value = '';
+    sortAndShowList();
+    console.log("Search input opened.");
+  } else {
+    searchSection.style.display = 'none';
+    searchInput.value = '';
+    sortAndShowList(); // 닫힐 때 필터링을 해제하고 전체 목록 표시
+    console.log("Search input closed and filter cleared.");
+  }
+}
+
+
+/**
+ * Todo 목록을 검색어 기준으로 필터링하여 화면에 표시합니다.
+ */
+function filterTodoList() {
+  const query = document.getElementById('search-input').value.trim().toLowerCase();
+  const todoListUl = document.getElementById('todolist-ul');
+  todoListUl.innerHTML = '';
+
+  // 1. 현재 정렬된 목록을 가져옵니다. (sortAndShowList의 정렬 로직을 재사용)
+  const sortBy = document.getElementById('sort-by').value;
+  const sortedList = [...todoList].sort((a, b) => {
+    // 완료된 항목은 항상 목록의 끝으로 보냅니다.
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    // 정렬 기준 로직 (sortAndShowList에서 복사하여 재사용)
+    if (sortBy === 'dueDateAsc') {
+      const dateA = new Date(a.dueDate || '9999-12-31');
+      const dateB = new Date(b.dueDate || '9999-12-31');
+      return dateA - dateB;
+    } else if (sortBy === 'dueDateDesc') {
+      const dateA = new Date(a.dueDate || '0000-01-01');
+      const dateB = new Date(b.dueDate || '0000-01-01');
+      return dateB - dateA;
+    } else if (sortBy === 'category') {
+      return a.category.localeCompare(b.category);
+    } else if (sortBy === 'idDesc') {
+      return b.id - a.id;
+    }
+    return 0;
+  });
+
+  // 2. 검색어 필터링
+  const filteredList = sortedList.filter(item =>
+    item.title.toLowerCase().includes(query)
+  );
+
+  // 3. 화면 출력
+  if (filteredList.length === 0) {
+    todoListUl.innerHTML = `<li style="text-align: center; color: #888; padding: 20px;">'${query}'에 대한 검색 결과가 없습니다.</li>`;
+    return;
+  }
+
+  filteredList.forEach(item => {
+    todoListUl.appendChild(getTodoItemElem(item));
+  });
+}
+
+
+/**
+ * 기존 sortAndShowList 함수 수정:
+ * 검색창이 열려있으면 필터링 함수를 호출하도록 로직을 변경합니다.
+ */
+function sortAndShowList() {
+  const searchSection = document.getElementById('search-section');
+  const searchInput = document.getElementById('search-input');
+
+  // 🚨 검색창이 열려 있고, 검색어가 입력되어 있다면 filterTodoList를 호출합니다.
+  if (searchSection && searchSection.style.display !== 'none' && searchInput && searchInput.value.trim() !== '') {
+    filterTodoList();
+    return;
+  }
+
+  const sortBy = document.getElementById('sort-by').value;
+  // ... (이하 기존 정렬 로직은 그대로 유지) ...
+  // ... (기존 정렬 및 렌더링 로직) ...
+
+  // (이 부분에 기존 정렬/렌더링 로직이 들어갑니다.)
+
+  // 1. 데이터 정렬
+  const sortedList = [...todoList].sort((a, b) => {
+    // 완료된 항목은 항상 목록의 끝으로 보냅니다.
+    if (a.done !== b.done) {
+      return a.done ? 1 : -1;
+    }
+
+    if (sortBy === 'dueDateAsc') {
+      // 마감일 빠른 순 (오름차순)
+      const dateA = new Date(a.dueDate || '9999-12-31');
+      const dateB = new Date(b.dueDate || '9999-12-31');
+      return dateA - dateB;
+    } else if (sortBy === 'dueDateDesc') {
+      // 마감일 늦은 순 (내림차순)
+      const dateA = new Date(a.dueDate || '0000-01-01');
+      const dateB = new Date(b.dueDate || '0000-01-01');
+      return dateB - dateA;
+    } else if (sortBy === 'category') {
+      // 카테고리 이름 순
+      return a.category.localeCompare(b.category);
+    } else if (sortBy === 'idDesc') {
+      // 최신 순 (ID 내림차순)
+      return b.id - a.id;
+    }
+    return 0;
+  });
+
+  // 2. 화면 출력
+  const todoListUl = document.getElementById('todolist-ul');
+  todoListUl.innerHTML = '';
+
+  if (sortedList.length === 0) {
+    todoListUl.innerHTML = '<li style="text-align: center; color: #888; padding: 20px;">할 일이 없습니다!</li>';
+    return;
+  }
+
+  sortedList.forEach(item => {
+    todoListUl.appendChild(getTodoItemElem(item));
+  });
+}
+
 // ----------------------------------------------------------------------
 // --- 5. 이벤트 핸들러 및 초기화 ---
 // ----------------------------------------------------------------------
@@ -592,3 +723,5 @@ window.addCategory = addCategory;
 window.handleCategoryKeyup = handleCategoryKeyup;
 window.editItem = editItem;
 window.toggleDone = toggleDone; // 🚨 누락되었을 수 있는 토글 함수도 노출
+window.toggleSearchInput = toggleSearchInput; // 🚨 새 함수 노출
+window.filterTodoList = filterTodoList; // 🚨 새 함수 노출
