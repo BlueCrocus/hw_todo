@@ -61,6 +61,8 @@ function getTodoItemElem(item) {
   const liElem = document.createElement('li');
   liElem.id = `todo-${item.id}`;
   liElem.dataset.id = item.id;
+  // 강사님 코드와 일관성을 위해 data-done 속성 추가
+  liElem.dataset.done = item.done.toString(); 
   liElem.classList.add('todo-item');
   if (item.done) {
     liElem.classList.add('done');
@@ -85,7 +87,8 @@ function getTodoItemElem(item) {
       !e.target.classList.contains('edit-todo-input') &&
       e.target.tagName !== 'SELECT'
     ) {
-      toggleDone(item.id);
+      // data-id는 문자열이므로 Number로 변환
+      toggleDone(Number(liElem.dataset.id)); 
     }
   });
 
@@ -99,7 +102,14 @@ function getTodoItemElem(item) {
   // 2. 제목
   const titleElem = document.createElement('span');
   titleElem.classList.add('todo-title');
-  titleElem.textContent = item.title;
+  // 완료된 항목은 <s> 태그로 감싸서 생성 (강사님 로직을 위한 준비)
+  if (item.done) {
+    const sElem = document.createElement('s');
+    sElem.textContent = item.title;
+    titleElem.appendChild(sElem);
+  } else {
+    titleElem.textContent = item.title;
+  }
   detailsDiv.appendChild(titleElem);
 
   // 3. 마감일
@@ -157,7 +167,7 @@ function getTodoItemElem(item) {
 }
 
 // ----------------------------------------------------------------------
-// --- 3. 카테고리 관리 로직 ---
+// --- 3. 카테고리 관리 로직 (변경 없음) ---
 // ----------------------------------------------------------------------
 
 /**
@@ -312,7 +322,7 @@ function populateCategories() {
 }
 
 // ----------------------------------------------------------------------
-// --- 4. 데이터 조작 및 렌더링 로직 ---
+// --- 4. 데이터 조작 및 렌더링 로직 (toggleDone 수정됨) ---
 // ----------------------------------------------------------------------
 
 /**
@@ -574,17 +584,57 @@ function removeItem(id) {
 
 /**
  * Todo 아이템의 완료/미완료 상태를 토글하는 함수
+ * @param {number} id - 토글할 Todo 아이템의 번호(id)
  */
 function toggleDone(id) {
   const item = todoList.find(item => item.id === id);
-  if (item) {
-    item.done = !item.done;
-    sortAndShowList();
-    saveToLocalStorage();
-    showNotification(item.done ? '할 일을 완료했습니다! 🎉' : '할 일을 미완료로 변경했습니다.', '#5cb85c'); // 완료 알림
-    console.log(`[Todo Toggled] ID: ${id}, Done: ${item.done}`);
+  if (!item) return;
+
+  const targetLi = document.getElementById(`todo-${id}`);
+  
+  // 1. DOM에서 현재 상태를 읽어옴
+  const beforeDone = targetLi.dataset.done; // 'true'/'false'
+  const isDone = beforeDone === 'true' ? false : true;
+
+  const titleEl = targetLi.querySelector('.todo-title');
+  const notificationMsg = isDone ? '할 일을 완료했습니다! 🎉' : '할 일을 미완료로 변경했습니다.';
+
+  if (isDone) { 
+    // 완료(true)가 될 때: <s> 태그를 추가하여 취소선 표시
+    const sElem = document.createElement('s');
+    // 기존 텍스트를 <s> 태그 안으로 이동
+    sElem.textContent = titleEl.textContent;
+    titleEl.textContent = ''; // 기존 텍스트 비우기
+    titleEl.appendChild(sElem);
+    targetLi.classList.add('done'); // 시각적 완료 표시를 위한 클래스 추가
+  } else { 
+    // 미완료(false)가 될 때: <s> 태그를 제거하여 취소선 제거
+    const sElem = titleEl.firstElementChild; // <s> 요소
+    if (sElem && sElem.tagName === 'S') {
+      // <s> 태그 안의 텍스트를 <span>의 텍스트로 복원
+      titleEl.textContent = sElem.textContent;
+      sElem.remove();
+    }
+    targetLi.classList.remove('done'); // 시각적 완료 표시를 위한 클래스 제거
   }
+  
+  // 2. DOM의 data-done 속성 업데이트
+  targetLi.dataset.done = isDone.toString(); 
+
+  // 3. 데이터 배열 업데이트 (정렬, 검색, 저장 시 사용됨)
+  item.done = isDone; 
+
+  // 4. UI 갱신 (정렬만 다시 수행하여 완료 항목을 아래로 이동)
+  sortAndShowList(); 
+
+  // 5. 로컬 스토리지에 데이터 저장
+  saveToLocalStorage();
+
+  // 6. 사용자에게 알림
+  showNotification(notificationMsg, '#5cb85c'); 
+  console.log(`[Todo Toggled] ID: ${id}, Done: ${item.done}`);
 }
+
 
 /**
  * Todo 목록을 검색어 기준으로 필터링하여 화면에 표시합니다.
@@ -633,7 +683,7 @@ function filterTodoList() {
 }
 
 // ----------------------------------------------------------------------
-// --- 5. 이벤트 핸들러 및 초기화 ---
+// --- 5. 이벤트 핸들러 및 초기화 (변경 없음) ---
 // ----------------------------------------------------------------------
 
 /**
