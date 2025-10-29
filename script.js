@@ -66,22 +66,25 @@ function getTodoItemElem(item) {
     liElem.classList.add('done');
   }
   // 카테고리 색상으로 왼쪽 border 설정
-  item.color = categories.find(c => c.name === item.category)?.color || "#999"; // 카테고리가 삭제되었을 경우를 대비해 색상 재확인
+  item.color = categories.find(c => c.name === item.category)?.color || "#999";
   liElem.style.borderLeftColor = item.color;
 
   // 제목, 카테고리, 마감일 컨테이너
   const detailsDiv = document.createElement('div');
   detailsDiv.classList.add('item-details');
 
-  // li 클릭 시 토글 기능 (제목, 버튼, 입력창이 아닐 때만 토글)
-  // 💡 이벤트 리스너는 여기서 유지합니다. (동적 요소에 대한 이벤트 연결)
+  // 제목 클릭 시 완료 처리 허용
   liElem.addEventListener('click', (e) => {
-    if (!e.target.classList.contains('todo-title') &&
+    // 버튼, 입력 필드 등 '편집'과 관련된 요소가 아닌 경우에만 toggleDone 실행
+    if (
+      !e.target.closest('.item-controls') &&
       !e.target.classList.contains('delete-button') &&
       !e.target.classList.contains('edit-button') &&
       !e.target.classList.contains('save-button') &&
       !e.target.classList.contains('cancel-button') &&
-      !e.target.classList.contains('edit-todo-input')) {
+      !e.target.classList.contains('edit-todo-input') &&
+      e.target.tagName !== 'SELECT'
+    ) {
       toggleDone(item.id);
     }
   });
@@ -129,7 +132,6 @@ function getTodoItemElem(item) {
   editElem.textContent = '✏️';
   editElem.classList.add('control-button', 'edit-button');
   editElem.title = '할 일 수정';
-  // 💡 이벤트 리스너는 여기서 유지합니다. (동적 요소에 대한 이벤트 연결)
   editElem.addEventListener('click', (e) => {
     e.stopPropagation();
     editItem(item.id);
@@ -142,7 +144,6 @@ function getTodoItemElem(item) {
   deleteElem.textContent = 'x';
   deleteElem.classList.add('control-button', 'delete-button');
   deleteElem.title = '삭제';
-  // 💡 이벤트 리스너는 여기서 유지합니다. (동적 요소에 대한 이벤트 연결)
   deleteElem.addEventListener('click', (e) => {
     e.stopPropagation();
     removeItem(item.id);
@@ -150,7 +151,7 @@ function getTodoItemElem(item) {
   controlsDiv.appendChild(deleteElem);
 
   liElem.appendChild(detailsDiv);
-  liElem.appendChild(controlsDiv); // controlsDiv를 li에 추가
+  liElem.appendChild(controlsDiv);
 
   return liElem;
 }
@@ -173,11 +174,8 @@ function openCategoryModal() {
 
 /**
  * 모달 닫기
- * @param {Event} event - 이벤트 객체 (옵션)
  */
-function closeCategoryModal(event) {
-  // 💡 HTML 인라인 onclick 제거로 인해 로직 수정: 오버레이 클릭 방지 로직은 이벤트 연결 시에 처리합니다.
-
+function closeCategoryModal() {
   const overlay = document.getElementById('category-modal-overlay');
   overlay.classList.remove('active');
   setTimeout(() => {
@@ -219,7 +217,6 @@ function addCategory() {
 
   showNotification(`'${name}' 카테고리가 추가되었습니다.`, '#5cb85c');
   console.log(`[Category Added] Name: ${name}, Color: ${color}`);
-  console.log("Current Categories:", categories);
 }
 
 /**
@@ -242,7 +239,7 @@ function removeCategory(name) {
   // 배열에서 카테고리 제거
   categories = categories.filter(c => c.name !== name);
 
-  // "미지정" 카테고리 확인 (없으면 추가하는 로직은 초기화에 있으므로 여기서는 find만 사용)
+  // "미지정" 카테고리 확인 
   const defaultCategory = categories.find(c => c.name === "미지정");
 
   todoList.forEach(item => {
@@ -260,7 +257,6 @@ function removeCategory(name) {
 
   showNotification(`'${name}' 카테고리가 삭제되었습니다.`, '#d9534f');
   console.log(`[Category Removed] Name: ${name}`);
-  console.log("Remaining Categories:", categories);
 }
 
 /**
@@ -280,7 +276,6 @@ function populateCategoryList() {
     const deleteButton = document.createElement('button');
     deleteButton.textContent = 'x';
     deleteButton.title = `${category.name} 카테고리 삭제`;
-    // 💡 이벤트 리스너는 여기서 유지합니다. (동적 요소에 대한 이벤트 연결)
     deleteButton.addEventListener('click', () => removeCategory(category.name));
 
     // "미지정" 카테고리는 삭제 버튼 숨김
@@ -321,18 +316,27 @@ function populateCategories() {
 // ----------------------------------------------------------------------
 
 /**
- * Todo 아이템의 제목을 업데이트하고 화면을 갱신하는 함수 (수정 로직)
+ * Todo 아이템의 제목, 카테고리, 마감일을 업데이트하고 화면을 갱신하는 함수 (수정 로직)
  */
-function updateItemTitle(id, newTitle) {
+function updateItem(id, newTitle, newCategory, newDueDate) {
   const item = todoList.find(item => item.id === id);
   if (item) {
+    // 1. 데이터 업데이트
     item.title = newTitle.trim();
+    item.category = newCategory;
+    item.dueDate = newDueDate;
+
+    // 2. 카테고리 색상도 업데이트
+    item.color = categories.find(c => c.name === newCategory)?.color || "#999";
+
+    // 3. UI 및 저장
     sortAndShowList();
     saveToLocalStorage();
-    showNotification(`수정되었습니다.`, '#28a745');
-    console.log(`[Todo Updated] ID: ${id}, New Title: ${item.title}`);
+    showNotification(`할 일 정보가 수정되었습니다.`, '#28a745');
+    console.log(`[Todo Updated] ID: ${id}, Title: ${item.title}, Category: ${item.category}, Due Date: ${item.dueDate}`);
   }
 }
+
 
 /**
  * 특정 Todo 항목을 편집 가능한 모드로 전환하는 함수 (✏️ 버튼 클릭 시)
@@ -343,25 +347,59 @@ function editItem(id) {
 
   const liElem = document.getElementById(`todo-${id}`);
   const titleElem = liElem.querySelector('.todo-title');
+  const dueDateElem = liElem.querySelector('.due-date');
+  const categoryTag = liElem.querySelector('.category-tag');
   const detailsDiv = liElem.querySelector('.item-details');
-  const controlsDiv = liElem.querySelector('.item-controls'); // 버튼 컨테이너
+  const controlsDiv = liElem.querySelector('.item-controls');
 
+  // 완료된 항목 수정 방지
   if (item.done) {
     showNotification('완료된 항목은 수정할 수 없습니다.', '#f0ad4e');
     return;
   }
 
-  // 1. 기존 제목을 입력 필드로 대체
-  const editInput = document.createElement('input');
-  editInput.type = 'text';
-  editInput.value = item.title;
-  editInput.classList.add('edit-todo-input');
-  editInput.style.flexGrow = '1';
+  // --- 1. 기존 항목을 입력 필드로 대체 ---
 
-  detailsDiv.replaceChild(editInput, titleElem);
-  editInput.focus();
+  // 1-1. 제목 입력 필드
+  const editTitleInput = document.createElement('input');
+  editTitleInput.type = 'text';
+  editTitleInput.value = item.title;
+  editTitleInput.classList.add('edit-todo-input');
+  editTitleInput.placeholder = '할 일 제목';
+  editTitleInput.maxLength = 30; // maxlength="30" 추가
 
-  // 2. 컨트롤 버튼 변경: 수정 버튼을 저장/취소 버튼으로 대체
+  // 1-2. 마감일 입력 필드
+  const editDateInput = document.createElement('input');
+  editDateInput.type = 'date';
+  editDateInput.value = item.dueDate;
+  editDateInput.classList.add('edit-todo-input');
+  editDateInput.style.maxWidth = '150px';
+  editDateInput.placeholder = '마감일';
+
+  // 1-3. 카테고리 선택 필드 
+  const editCategorySelect = document.createElement('select');
+  editCategorySelect.id = `edit-category-${id}`;
+  editCategorySelect.classList.add('edit-todo-input');
+  editCategorySelect.style.maxWidth = '150px';
+
+  categories.forEach(category => {
+    const option = document.createElement('option');
+    option.value = category.name;
+    option.textContent = category.name;
+    if (category.name === item.category) {
+      option.selected = true;
+    }
+    editCategorySelect.appendChild(option);
+  });
+
+  // 기존 요소들을 새 입력 요소로 교체
+  detailsDiv.replaceChild(editTitleInput, titleElem);
+  detailsDiv.replaceChild(editCategorySelect, categoryTag);
+  detailsDiv.replaceChild(editDateInput, dueDateElem);
+
+  editTitleInput.focus();
+
+  // --- 2. 컨트롤 버튼 변경: 저장/취소 버튼으로 대체 ---
   controlsDiv.innerHTML = '';
 
   // 2-1. 저장 버튼 (✔)
@@ -369,14 +407,28 @@ function editItem(id) {
   saveButton.textContent = '✔';
   saveButton.classList.add('control-button', 'save-button');
   saveButton.title = '저장';
-  // 💡 이벤트 리스너는 여기서 유지합니다. (동적 요소에 대한 이벤트 연결)
   saveButton.addEventListener('click', () => {
-    const newTitle = editInput.value.trim();
+    const newTitle = editTitleInput.value.trim();
+    const newCategory = editCategorySelect.value;
+    const newDueDate = editDateInput.value;
+
     if (newTitle === '') {
       showNotification('제목은 비워둘 수 없습니다.', '#d9534f');
       return;
     }
-    updateItemTitle(id, newTitle);
+
+    // 30자 제한 유효성 검사
+    if (newTitle.length > 30) {
+      showNotification('할 일 제목은 30글자를 초과할 수 없습니다.', '#d9534f');
+      return;
+    }
+
+    if (newCategory === '') {
+      showNotification('카테고리를 선택해주세요.', '#d9534f');
+      return;
+    }
+
+    updateItem(id, newTitle, newCategory, newDueDate);
   });
   controlsDiv.appendChild(saveButton);
 
@@ -385,18 +437,19 @@ function editItem(id) {
   cancelButton.textContent = 'X';
   cancelButton.classList.add('control-button', 'cancel-button');
   cancelButton.title = '취소';
-  // 💡 이벤트 리스너는 여기서 유지합니다. (동적 요소에 대한 이벤트 연결)
   cancelButton.addEventListener('click', () => sortAndShowList()); // 취소 시 원래 상태로 복원
   controlsDiv.appendChild(cancelButton);
 
   // 3. Enter/Escape 키 이벤트 처리
-  editInput.addEventListener('keyup', (e) => {
+  const handleEditKeyup = (e) => {
     if (e.key === 'Enter') {
       saveButton.click();
     } else if (e.key === 'Escape') {
       cancelButton.click();
     }
-  });
+  };
+  editTitleInput.addEventListener('keyup', handleEditKeyup);
+  editDateInput.addEventListener('keyup', handleEditKeyup);
 }
 
 
@@ -404,11 +457,10 @@ function editItem(id) {
  * 현재 선택된 정렬 기준에 따라 todoList를 정렬하고 화면을 업데이트합니다.
  */
 function sortAndShowList() {
-  const searchSection = document.getElementById('search-section');
   const searchInput = document.getElementById('search-input');
 
-  // 🚨 검색창이 열려 있고, 검색어가 입력되어 있다면 filterTodoList를 호출합니다.
-  if (searchSection && searchSection.style.display !== 'none' && searchInput && searchInput.value.trim() !== '') {
+  // 검색창이 항상 열려 있으므로, 검색어 입력 여부만 확인합니다.
+  if (searchInput && searchInput.value.trim() !== '') {
     filterTodoList();
     return;
   }
@@ -472,6 +524,13 @@ function addItem() {
     showNotification('할 일 제목을 입력해주세요.', '#d9534f');
     return;
   }
+
+  // 🚨 30자 제한 유효성 검사 (등록 시점 최종 확인 로직)
+  if (title.length > 30) {
+    showNotification('할 일 제목은 30글자를 초과할 수 없습니다.', '#d9534f');
+    return;
+  }
+
   if (selectedCategoryName === '') {
     showNotification('카테고리를 선택해주세요.', '#d9534f');
     return;
@@ -498,8 +557,8 @@ function addItem() {
   categorySelect.selectedIndex = 0;
   titleInput.focus();
 
+  showNotification('할 일이 성공적으로 추가되었습니다.', '#5cb85c'); // 추가 알림
   console.log(`[Todo Added] ID: ${newItem.id}, Title: ${newItem.title}, Category: ${newItem.category}`);
-  console.log("Current Todo List:", todoList);
 }
 
 /**
@@ -509,8 +568,8 @@ function removeItem(id) {
   todoList = todoList.filter(item => item.id !== id);
   sortAndShowList();
   saveToLocalStorage();
+  showNotification('할 일이 삭제되었습니다.', '#d9534f'); // 삭제 알림
   console.log(`[Todo Removed] ID: ${id}`);
-  console.log("Current Todo List:", todoList);
 }
 
 /**
@@ -522,32 +581,10 @@ function toggleDone(id) {
     item.done = !item.done;
     sortAndShowList();
     saveToLocalStorage();
+    showNotification(item.done ? '할 일을 완료했습니다! 🎉' : '할 일을 미완료로 변경했습니다.', '#5cb85c'); // 완료 알림
     console.log(`[Todo Toggled] ID: ${id}, Done: ${item.done}`);
   }
 }
-
-/**
- * 검색 입력 필드의 표시 상태를 토글합니다.
- */
-function toggleSearchInput() {
-  const searchSection = document.getElementById('search-section');
-  const searchInput = document.getElementById('search-input');
-
-  if (searchSection.style.display === 'none' || !searchSection.style.display) {
-    searchSection.style.display = 'block';
-    searchInput.focus();
-    // 검색창이 열릴 때 이전 필터링을 초기화합니다.
-    searchInput.value = '';
-    sortAndShowList();
-    console.log("Search input opened.");
-  } else {
-    searchSection.style.display = 'none';
-    searchInput.value = '';
-    sortAndShowList(); // 닫힐 때 필터링을 해제하고 전체 목록 표시
-    console.log("Search input closed and filter cleared.");
-  }
-}
-
 
 /**
  * Todo 목록을 검색어 기준으로 필터링하여 화면에 표시합니다.
@@ -557,12 +594,12 @@ function filterTodoList() {
   const todoListUl = document.getElementById('todolist-ul');
   todoListUl.innerHTML = '';
 
-  // 1. 현재 정렬된 목록을 가져옵니다. (sortAndShowList의 정렬 로직을 재사용)
+  // 1. 현재 정렬된 목록을 가져옵니다. 
   const sortBy = document.getElementById('sort-by').value;
   const sortedList = [...todoList].sort((a, b) => {
     // 완료된 항목은 항상 목록의 끝으로 보냅니다.
     if (a.done !== b.done) return a.done ? 1 : -1;
-    // 정렬 기준 로직 (sortAndShowList에서 복사하여 재사용)
+
     if (sortBy === 'dueDateAsc') {
       const dateA = new Date(a.dueDate || '9999-12-31');
       const dateB = new Date(b.dueDate || '9999-12-31');
@@ -600,6 +637,18 @@ function filterTodoList() {
 // ----------------------------------------------------------------------
 
 /**
+ * 할 일 제목 입력 시 30자 초과를 방지하고 알림을 표시하는 이벤트 핸들러
+ */
+function handleTitleInput(event) {
+  const input = event.target;
+  // 30자 제한을 초과했고, 입력된 키가 제어 키(백스페이스, 삭제, 화살표 등)가 아닌 경우
+  if (input.value.length >= 30 && event.key.length === 1) {
+    event.preventDefault(); // 입력 차단
+    showNotification('할 일 제목은 30글자를 초과할 수 없습니다.', '#d9534f');
+  }
+}
+
+/**
  * 추가 버튼 클릭 시 실행되는 이벤트 핸들러
  */
 function add() {
@@ -619,31 +668,38 @@ function handleKeyup(event) {
 function showNotification(message, color) {
   const notification = document.createElement('div');
   notification.textContent = message;
+
+  // 알림 위치: 화면 중앙
   notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 10px 20px;
-        background-color: ${color};
-        color: white;
-        border-radius: 5px;
-        z-index: 2000;
-        opacity: 0;
-        transition: opacity 0.5s, transform 0.5s;
-        transform: translateY(-20px);
-    `;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 15px 30px;
+    background-color: ${color};
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 0.4s, transform 0.4s;
+    white-space: nowrap;
+    max-width: 80%;
+    text-align: center;
+    `;
+
   document.body.appendChild(notification);
 
   // 표시
   setTimeout(() => {
     notification.style.opacity = '1';
-    notification.style.transform = 'translateY(0)';
+    notification.style.transform = 'translate(-50%, -50%)';
   }, 10);
 
   // 3초 후 제거
   setTimeout(() => {
     notification.style.opacity = '0';
-    notification.style.transform = 'translateY(-20px)';
+    notification.style.transform = 'translate(-50%, -30%)';
     notification.addEventListener('transitionend', () => notification.remove());
   }, 3000);
 }
@@ -656,9 +712,11 @@ function setupEventListeners() {
   document.getElementById('add-button').addEventListener('click', add);
   document.getElementById('todo-title-input').addEventListener('keyup', handleKeyup);
 
+  // 30자 제한 알림을 위한 keydown 이벤트
+  document.getElementById('todo-title-input').addEventListener('keydown', handleTitleInput);
+
   // 2. 정렬 및 검색 섹션
   document.getElementById('sort-by').addEventListener('change', sortAndShowList);
-  document.getElementById('open-search-input').addEventListener('click', toggleSearchInput);
   document.getElementById('search-input').addEventListener('keyup', filterTodoList);
 
   // 3. 카테고리 모달 섹션

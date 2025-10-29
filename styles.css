@@ -19,32 +19,27 @@ body {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* 🚨 HTML inline style 제거 후 수정 */
+/* 🚨 수정: 검색 섹션을 항상 보이도록 변경 (display: none 제거) */
 #search-section {
-  display: none;
-  /* 초기에는 숨김 */
+  display: block;
   margin-bottom: 15px;
 }
 
 /* ====================================================================== */
-/* 헤더 및 버튼 (검색 버튼 추가 반영) */
+/* 헤더 및 버튼 (검색 버튼 제거 반영) */
 /* ====================================================================== */
 
 .header-content {
-  /* 🚨 정렬 수정: 제목과 버튼을 양 끝으로 정렬 */
   display: flex;
   justify-content: space-between;
   align-items: center;
   position: relative;
   padding-bottom: 10px;
-  /* 제목 아래 보더 대신 컨테이너에 패딩 부여 */
   border-bottom: 2px solid #eee;
-  /* 제목 아래 보더 유지 */
   margin-bottom: 25px;
 }
 
 h1 {
-  /* 🚨 수정: flex 아이템으로 동작하도록 변경 */
   text-align: left;
   color: #333;
   margin: 0;
@@ -53,34 +48,21 @@ h1 {
   width: auto;
   flex-grow: 1;
   border-bottom: none;
-  /* 보더는 header-content로 옮김 */
+}
+
+/* 🚨 수정: 검색 버튼 숨기기 */
+#open-search-input {
+  display: none;
 }
 
 /* 🚨 검색 및 설정 버튼 컨테이너 스타일 */
 .header-controls {
   display: flex;
   gap: 5px;
-  /* 버튼 사이 간격 */
   flex-shrink: 0;
 }
 
-/* 🚨 #open-search-input 버튼 스타일 추가 */
-#open-search-input {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: #555;
-  transition: color 0.2s, transform 0.2s;
-}
-
-#open-search-input:hover {
-  color: #007bff;
-  transform: scale(1.1);
-}
-
 #open-category-settings {
-  /* 🚨 absolute 제거 및 일반 버튼처럼 스타일링 */
   position: static;
   background: none;
   border: none;
@@ -111,7 +93,6 @@ h1 {
   gap: 10px;
   margin-bottom: 20px;
   flex-wrap: wrap;
-  /* 🚨 정렬 통일 */
   align-items: center;
 }
 
@@ -121,7 +102,6 @@ h1 {
   border-radius: 6px;
   font-size: 16px;
   box-sizing: border-box;
-  /* 🚨 높이 통일 */
   height: 40px;
   background-color: white;
   -webkit-appearance: none;
@@ -146,7 +126,6 @@ h1 {
   background-color: #5cb85c;
   color: white;
   border: none;
-  /* 🚨 높이 통일 */
   height: 40px;
   padding: 0 15px;
   border-radius: 6px;
