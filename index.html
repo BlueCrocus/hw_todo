@@ -14,7 +14,6 @@
   <div class="container">
     <div class="header-content">
       <h1>Todo List ✒️</h1>
-
       <div class="header-controls">
         <button id="open-category-settings" title="카테고리 설정">⚙️</button>
       </div>
@@ -26,19 +25,15 @@
 
     <div class="input-group">
       <input type="text" id="todo-title-input" class="input-field" placeholder="할 일 제목" maxlength="30">
-
-      <select id="category-select" class="input-field">
-
-      </select>
-
+      <select id="category-select" class="input-field"></select>
       <input type="date" id="due-date-input" class="input-field" placeholder="마감일 선택">
-
       <button id="add-button">✚</button>
     </div>
 
     <div class="sort-section">
       <label for="sort-by">정렬 기준:</label>
       <select id="sort-by" class="input-field">
+        <option value="manual">수동 순서</option>
         <option value="dueDateAsc">마감일 빠른 순</option>
         <option value="dueDateDesc">마감일 늦은 순</option>
         <option value="category">카테고리 순</option>

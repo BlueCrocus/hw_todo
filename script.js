@@ -19,7 +19,7 @@ let lastNo = todoList.length > 0 ? Math.max(...todoList.map(item => item.id)) : 
 // ----------------------------------------------------------------------
 
 /**
- * 현재 todoList 및 categories 데이터를 localStorage에 저장합니다.
+ * 현재 todoList 및 categories 데이터를 localStorage에 저장
  */
 function saveToLocalStorage() {
   localStorage.setItem('todoList', JSON.stringify(todoList));
@@ -28,7 +28,7 @@ function saveToLocalStorage() {
 }
 
 /**
- * localStorage에서 데이터를 불러와 전역 변수를 초기화합니다.
+ * localStorage에서 데이터를 불러와 전역 변수를 초기화
  */
 function loadFromLocalStorage() {
   const savedTodos = localStorage.getItem('todoList');
@@ -62,7 +62,7 @@ function getTodoItemElem(item) {
   liElem.id = `todo-${item.id}`;
   liElem.dataset.id = item.id;
   // 강사님 코드와 일관성을 위해 data-done 속성 추가
-  liElem.dataset.done = item.done.toString(); 
+  liElem.dataset.done = item.done.toString();
   liElem.classList.add('todo-item');
   if (item.done) {
     liElem.classList.add('done');
@@ -85,10 +85,11 @@ function getTodoItemElem(item) {
       !e.target.classList.contains('save-button') &&
       !e.target.classList.contains('cancel-button') &&
       !e.target.classList.contains('edit-todo-input') &&
+      !e.target.classList.contains('move-button') &&
       e.target.tagName !== 'SELECT'
     ) {
       // data-id는 문자열이므로 Number로 변환
-      toggleDone(Number(liElem.dataset.id)); 
+      toggleDone(Number(liElem.dataset.id));
     }
   });
 
@@ -102,7 +103,7 @@ function getTodoItemElem(item) {
   // 2. 제목
   const titleElem = document.createElement('span');
   titleElem.classList.add('todo-title');
-  // 완료된 항목은 <s> 태그로 감싸서 생성 (강사님 로직을 위한 준비)
+  // 완료된 항목은 <s> 태그로 감싸서 생성
   if (item.done) {
     const sElem = document.createElement('s');
     sElem.textContent = item.title;
@@ -136,7 +137,32 @@ function getTodoItemElem(item) {
   const controlsDiv = document.createElement('div');
   controlsDiv.classList.add('item-controls');
 
-  // 4. 수정 버튼 (✏️)
+  /* 🔥 4-A. 위로 이동 버튼 (⬆️) 추가 */
+  const moveUpElem = document.createElement('button');
+  moveUpElem.type = 'button';
+  moveUpElem.textContent = '⬆️';
+  moveUpElem.classList.add('control-button', 'move-button', 'move-up-button');
+  moveUpElem.title = '위로 이동';
+  moveUpElem.addEventListener('click', (e) => {
+    e.stopPropagation();
+    moveItem(item.id, 'up');
+  });
+  controlsDiv.appendChild(moveUpElem);
+
+  /* 🔥 4-B. 아래로 이동 버튼 (⬇️) 추가 */
+  const moveDownElem = document.createElement('button');
+  moveDownElem.type = 'button';
+  moveDownElem.textContent = '⬇️';
+  moveDownElem.classList.add('control-button', 'move-button', 'move-down-button');
+  moveDownElem.title = '아래로 이동';
+  moveDownElem.addEventListener('click', (e) => {
+    e.stopPropagation();
+    moveItem(item.id, 'down');
+  });
+  controlsDiv.appendChild(moveDownElem);
+
+
+  // 5. 수정 버튼 (✏️)
   const editElem = document.createElement('button');
   editElem.type = 'button';
   editElem.textContent = '✏️';
@@ -148,7 +174,7 @@ function getTodoItemElem(item) {
   });
   controlsDiv.appendChild(editElem);
 
-  // 5. 삭제 버튼 (x)
+  // 6. 삭제 버튼 (x)
   const deleteElem = document.createElement('button');
   deleteElem.type = 'button';
   deleteElem.textContent = 'x';
@@ -167,7 +193,7 @@ function getTodoItemElem(item) {
 }
 
 // ----------------------------------------------------------------------
-// --- 3. 카테고리 관리 로직 (변경 없음) ---
+// --- 3. 카테고리 관리 로직  ---
 // ----------------------------------------------------------------------
 
 /**
@@ -195,7 +221,7 @@ function closeCategoryModal() {
 }
 
 /**
- * 새로운 카테고리를 추가합니다.
+ * 새로운 카테고리를 추가.
  */
 function addCategory() {
   const nameInput = document.getElementById('new-category-name');
@@ -238,7 +264,7 @@ function handleCategoryKeyup(event) {
 
 
 /**
- * 카테고리를 삭제하고, 해당 카테고리를 사용하던 Todo 항목을 "미지정"으로 변경합니다.
+ * 카테고리를 삭제하고, 해당 카테고리를 사용하던 Todo 항목을 "미지정"으로 변경
  */
 function removeCategory(name) {
   if (name === "미지정") {
@@ -270,7 +296,7 @@ function removeCategory(name) {
 }
 
 /**
- * 카테고리 관리 섹션에 현재 카테고리 목록 칩을 표시합니다.
+ * 카테고리 관리 섹션에 현재 카테고리 목록 칩을 표시
  */
 function populateCategoryList() {
   const display = document.getElementById('category-list-display');
@@ -298,7 +324,7 @@ function populateCategoryList() {
 }
 
 /**
- * 카테고리 드롭다운 옵션을 동적으로 생성합니다.
+ * 카테고리 드롭다운 옵션을 동적으로 생성
  */
 function populateCategories() {
   const select = document.getElementById('category-select');
@@ -322,7 +348,7 @@ function populateCategories() {
 }
 
 // ----------------------------------------------------------------------
-// --- 4. 데이터 조작 및 렌더링 로직 (toggleDone 수정됨) ---
+// --- 4. 데이터 조작 및 렌더링 로직 (toggleDone, moveItem 추가됨) ---
 // ----------------------------------------------------------------------
 
 /**
@@ -464,12 +490,11 @@ function editItem(id) {
 
 
 /**
- * 현재 선택된 정렬 기준에 따라 todoList를 정렬하고 화면을 업데이트합니다.
+ * 현재 선택된 정렬 기준에 따라 todoList를 정렬하고 화면을 업데이트
  */
 function sortAndShowList() {
   const searchInput = document.getElementById('search-input');
 
-  // 검색창이 항상 열려 있으므로, 검색어 입력 여부만 확인합니다.
   if (searchInput && searchInput.value.trim() !== '') {
     filterTodoList();
     return;
@@ -479,27 +504,33 @@ function sortAndShowList() {
 
   // 1. 데이터 정렬
   const sortedList = [...todoList].sort((a, b) => {
-    // 완료된 항목은 항상 목록의 끝으로 보냅니다.
-    if (a.done !== b.done) {
-      return a.done ? 1 : -1;
-    }
+    if (sortBy === 'manual') {
+      if (a.done !== b.done) {
+        return a.done ? 1 : -1;
+      }
+      return 0;
+    } else {
+      if (a.done !== b.done) {
+        return a.done ? 1 : -1;
+      }
 
-    if (sortBy === 'dueDateAsc') {
-      // 마감일 빠른 순 (오름차순)
-      const dateA = new Date(a.dueDate || '9999-12-31');
-      const dateB = new Date(b.dueDate || '9999-12-31');
-      return dateA - dateB;
-    } else if (sortBy === 'dueDateDesc') {
-      // 마감일 늦은 순 (내림차순)
-      const dateA = new Date(a.dueDate || '0000-01-01');
-      const dateB = new Date(b.dueDate || '0000-01-01');
-      return dateB - dateA;
-    } else if (sortBy === 'category') {
-      // 카테고리 이름 순
-      return a.category.localeCompare(b.category);
-    } else if (sortBy === 'idDesc') {
-      // 최신 순 (ID 내림차순)
-      return b.id - a.id;
+      if (sortBy === 'dueDateAsc') {
+        // 마감일 빠른 순 (오름차순)
+        const dateA = new Date(a.dueDate || '9999-12-31');
+        const dateB = new Date(b.dueDate || '9999-12-31');
+        return dateA - dateB;
+      } else if (sortBy === 'dueDateDesc') {
+        // 마감일 늦은 순 (내림차순)
+        const dateA = new Date(a.dueDate || '0000-01-01');
+        const dateB = new Date(b.dueDate || '0000-01-01');
+        return dateB - dateA;
+      } else if (sortBy === 'category') {
+        // 카테고리 이름 순
+        return a.category.localeCompare(b.category);
+      } else if (sortBy === 'idDesc') {
+        // 최신 순 (ID 내림차순)
+        return b.id - a.id;
+      }
     }
     return 0;
   });
@@ -591,7 +622,7 @@ function toggleDone(id) {
   if (!item) return;
 
   const targetLi = document.getElementById(`todo-${id}`);
-  
+
   // 1. DOM에서 현재 상태를 읽어옴
   const beforeDone = targetLi.dataset.done; // 'true'/'false'
   const isDone = beforeDone === 'true' ? false : true;
@@ -599,39 +630,35 @@ function toggleDone(id) {
   const titleEl = targetLi.querySelector('.todo-title');
   const notificationMsg = isDone ? '할 일을 완료했습니다! 🎉' : '할 일을 미완료로 변경했습니다.';
 
-  if (isDone) { 
-    // 완료(true)가 될 때: <s> 태그를 추가하여 취소선 표시
+  if (isDone) {
     const sElem = document.createElement('s');
-    // 기존 텍스트를 <s> 태그 안으로 이동
     sElem.textContent = titleEl.textContent;
-    titleEl.textContent = ''; // 기존 텍스트 비우기
+    titleEl.textContent = ''; 
     titleEl.appendChild(sElem);
-    targetLi.classList.add('done'); // 시각적 완료 표시를 위한 클래스 추가
-  } else { 
-    // 미완료(false)가 될 때: <s> 태그를 제거하여 취소선 제거
-    const sElem = titleEl.firstElementChild; // <s> 요소
+    targetLi.classList.add('done'); 
+  } else {
+    const sElem = titleEl.firstElementChild;
     if (sElem && sElem.tagName === 'S') {
-      // <s> 태그 안의 텍스트를 <span>의 텍스트로 복원
       titleEl.textContent = sElem.textContent;
       sElem.remove();
     }
-    targetLi.classList.remove('done'); // 시각적 완료 표시를 위한 클래스 제거
+    targetLi.classList.remove('done');
   }
-  
+
   // 2. DOM의 data-done 속성 업데이트
-  targetLi.dataset.done = isDone.toString(); 
+  targetLi.dataset.done = isDone.toString();
 
   // 3. 데이터 배열 업데이트 (정렬, 검색, 저장 시 사용됨)
-  item.done = isDone; 
+  item.done = isDone;
 
   // 4. UI 갱신 (정렬만 다시 수행하여 완료 항목을 아래로 이동)
-  sortAndShowList(); 
+  sortAndShowList();
 
   // 5. 로컬 스토리지에 데이터 저장
   saveToLocalStorage();
 
   // 6. 사용자에게 알림
-  showNotification(notificationMsg, '#5cb85c'); 
+  showNotification(notificationMsg, '#5cb85c');
   console.log(`[Todo Toggled] ID: ${id}, Done: ${item.done}`);
 }
 
@@ -644,11 +671,12 @@ function filterTodoList() {
   const todoListUl = document.getElementById('todolist-ul');
   todoListUl.innerHTML = '';
 
-  // 1. 현재 정렬된 목록을 가져옵니다. 
+  // 1. 현재 정렬된 목록을 가져옴
   const sortBy = document.getElementById('sort-by').value;
   const sortedList = [...todoList].sort((a, b) => {
-    // 완료된 항목은 항상 목록의 끝으로 보냅니다.
     if (a.done !== b.done) return a.done ? 1 : -1;
+
+    if (sortBy === 'manual') return 0;
 
     if (sortBy === 'dueDateAsc') {
       const dateA = new Date(a.dueDate || '9999-12-31');
@@ -681,6 +709,52 @@ function filterTodoList() {
     todoListUl.appendChild(getTodoItemElem(item));
   });
 }
+
+/* -------------------------------------------------------------------
+ *  새로 추가된 항목 이동 로직
+ * ------------------------------------------------------------------- */
+
+/**
+ * Todo 항목의 순서를 변경하고 화면을 갱신하는 함수
+ * @param {number} id - 이동할 Todo 항목의 id
+ * @param {string} direction - 'up' 또는 'down'
+ */
+function moveItem(id, direction) {
+  // 1. 현재 항목의 인덱스 찾기
+  const index = todoList.findIndex(item => item.id === id);
+
+  if (index === -1) return; // 항목이 없으면 종료
+
+  let newIndex = index;
+
+  // 2. 새로운 인덱스 계산
+  if (direction === 'up') {
+    newIndex = index - 1;
+  } else if (direction === 'down') {
+    newIndex = index + 1;
+  }
+
+  // 3. 배열 범위 유효성 검사 (첫 항목에서 위로, 마지막 항목에서 아래로 이동 방지)
+  if (newIndex < 0 || newIndex >= todoList.length) {
+    return;
+  }
+
+  // 4. 배열 항목 위치 변경 (swap)
+  const currentItem = todoList.splice(index, 1)[0];
+  todoList.splice(newIndex, 0, currentItem);
+
+  // 5. 수동 정렬을 위해 정렬 기준을 'manual'로 변경하고 UI 업데이트
+  const sortBySelect = document.getElementById('sort-by');
+  if (sortBySelect.value !== 'manual') {
+    sortBySelect.value = 'manual'; // 정렬 기준을 'manual'로 설정
+  }
+
+  sortAndShowList(); // 정렬을 다시 수행하여 UI를 갱신
+  saveToLocalStorage();
+  showNotification(direction === 'up' ? '항목이 위로 이동했습니다.' : '항목이 아래로 이동했습니다.', '#007bff');
+  console.log(`[Todo Moved] ID: ${id}, Direction: ${direction}, New Index: ${newIndex}`);
+}
+
 
 // ----------------------------------------------------------------------
 // --- 5. 이벤트 핸들러 및 초기화 (변경 없음) ---
@@ -721,22 +795,22 @@ function showNotification(message, color) {
 
   // 알림 위치: 화면 중앙
   notification.style.cssText = `
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 15px 30px;
-    background-color: ${color};
-    color: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    z-index: 2000;
-    opacity: 0;
-    transition: opacity 0.4s, transform 0.4s;
-    white-space: nowrap;
-    max-width: 80%;
-    text-align: center;
-    `;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 15px 30px;
+        background-color: ${color};
+        color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        z-index: 2000;
+        opacity: 0;
+        transition: opacity 0.4s, transform 0.4s;
+        white-space: nowrap;
+        max-width: 80%;
+        text-align: center;
+        `;
 
   document.body.appendChild(notification);
 
@@ -791,7 +865,7 @@ function setupEventListeners() {
 window.onload = function () {
   console.log("Todo List Application Initialized.");
 
-  // 🚨 저장된 데이터를 먼저 불러옵니다.
+  // 저장된 데이터를 먼저 불러옴
   loadFromLocalStorage();
 
   // 초기 카테고리 목록에 "미지정" 기본값 추가
